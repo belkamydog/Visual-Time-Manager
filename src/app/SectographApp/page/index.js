@@ -5,29 +5,7 @@ import hmUI from '@zos/ui'
 import { push } from '@zos/router'
 import { Time } from '@zos/sensor'
 import { addZero } from '../utils/prepare';
-import * as Globals from '../utils/Globals'
-
-
-let MOCK_EVENTS = [
-  { start: '2025-11-21T00:00:00', end: '2025-11-21T01:00:00', description: 'Do nothing' },
-  { start: '2025-11-21T03:00:00', end: '2025-11-21T06:00:00', description: 'Do work'},
-  { start: '2025-11-21T19:00:00', end: '2025-11-21T21:00:00', description: 'Time discussion'}, 
-  { start: '2025-11-21T11:00:00', end: '2025-11-21T12:00:00', description: 'Time of tea'}
-];
-
-// tmp
-const EVENT_COLORS = [
-  0x2E8B57, // Зеленый - работа
-  0x1E90FF, // Синий - встречи
-  0xFF6347, // Красный - важное
-  0xFFD700, // Желтый - личное
-  0x9932CC, // Фиолетовый - здоровье
-  0xFF69B4, // Розовый - развлечения
-  0xFF8C00, // Оранжевый - спорт
-  0x00CED1  // Бирюзовый - обучение
-];
-
-let color = 0 // tmp
+import { DayEvents } from '../utils/Globals';
 
 Page({
   widgets:{
@@ -38,7 +16,7 @@ Page({
     digitTime: null,
   },
   sensors: {
-    timeSensor: null
+    timeSensor: null,
   },
 
   initBackground(){
@@ -81,6 +59,13 @@ Page({
     this.timeSensor.onPerMinute(function() {
       self.digitTime.setProperty(hmUI.prop.TEXT, addZero(self.timeSensor.getHours().toString()) + 
                               ':' + addZero(self.timeSensor.getMinutes().toString()))
+      self.canvas.clear({
+        x: 0,
+        y: 0,
+        w: 480,
+        h: 480
+      })
+      self.renderEvents(DayEvents.getListOfCurrentDayEvents())                     
     })
   },
 
@@ -90,12 +75,12 @@ Page({
       y: 0,
       w: 480,
       h: 480,
-      alpha: 60 
+      alpha: 50 
     })
     this.canvas.addEventListener(hmUI.event.CLICK_UP, function cb(info) {
-      for (const event of MOCK_EVENTS){
+      for (const event of DayEvents.getListOfCurrentDayEvents()){
         let {startAngle, endAngle } = calculateAngles(event)
-        if (isPointInSector(info.x, info.y, 240, 240, 240, startAngle, endAngle) && isShowEvent(event)){
+        if (isPointInSector(info.x, info.y, 240, 240, 240, startAngle, endAngle)){
           push({
             url: 'page/event',
             params: JSON.stringify(event),
@@ -106,19 +91,16 @@ Page({
   },
 
   drawEvent(event){
-    if (isShowEvent(event)){
-      let {startAngle, endAngle} = calculateAngles(event)
-      this.canvas.drawArc({
-        center_x: 240,
-        center_y: 240,
-        radius_x: 225,
-        radius_y: 225,
-        start_angle: startAngle-90,
-        end_angle: endAngle-90,
-        color:  EVENT_COLORS[color],
-      })
-      color++
-    }
+    let {startAngle, endAngle} = calculateAngles(event)
+    this.canvas.drawArc({
+      center_x: 240,
+      center_y: 240,
+      radius_x: 225,
+      radius_y: 225,
+      start_angle: startAngle-90,
+      end_angle: endAngle-90,
+      color: event.color,
+    })
   },
 
   renderEvents(events){
@@ -127,16 +109,17 @@ Page({
     }
   },
 
+
   onInit(){
     this.initBackground()
     this.initCanvas()
     this.initArrows()
     this.initDigitalTime()
-    this.renderEvents(MOCK_EVENTS)
+    this.renderEvents(DayEvents.getListOfCurrentDayEvents())
   },
 
   build() {
-
+    
   },
 
   onDestroy(){

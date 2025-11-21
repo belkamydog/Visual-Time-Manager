@@ -38,7 +38,6 @@ export function isShowEvent(event){
     let result = true
     let now = new Date()
     let endEvent = new Date(event.end)
-    // console.log(Math.abs( now.getTime()) - endEvent.getTime() + event.description)
     if (now > endEvent && (now.getTime() - endEvent.getTime()) > 7200000){
       result = false
     }

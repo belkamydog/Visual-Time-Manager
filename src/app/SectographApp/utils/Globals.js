@@ -1,4 +1,3 @@
+import { EventsManager } from "./EventsManager"
 
-const GLOBALS = {
-    timer : null
-}
+export const DayEvents = new EventsManager()
