@@ -1,0 +1,4 @@
+
+const GLOBALS = {
+    timer : null
+}

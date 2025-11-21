@@ -1,0 +1,14 @@
+msgid "After"
+msgstr "Через"
+
+msgid "h"
+msgstr "ч"
+
+msgid "m"
+msgstr "м"
+
+msgid "ago"
+msgstr "назад"
+
+msgid "Left"
+msgstr "Осталось"

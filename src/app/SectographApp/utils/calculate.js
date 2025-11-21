@@ -9,7 +9,8 @@ export function calculateAngles(event){
 export function convertTimeToAngle(time){
   // 1h => 30 grad
   // 1h => 60 min => 30/60 = > 0.5 grad/min
-  let result = (time.h * 60 + time.m) * 0.5
+  let date = new Date(time)
+  let result = (date.getHours() * 60 + date.getMinutes()) * 0.5
   // normalization
   return result >= 360 ? result % 360 : result
 }
@@ -21,12 +22,32 @@ export function isPointInSector(x, y, centerX, centerY, radius, startAngle, endA
     return false;
   }
   let pointAngle = 90 - Math.atan2(centerY-y, x - centerX) * (180 / Math.PI);
+  if (pointAngle < 0) pointAngle = 360 + pointAngle
   // console.log("Point angle" + pointAngle)
 
   if (startAngle <= endAngle) {
+    if (startAngle < 0 ) pointAngle = pointAngle - 360
     // console.log("s " + startAngle + " e " + endAngle + " p " + pointAngle + " "+ ( pointAngle >= startAngle && pointAngle <= endAngle))
     return pointAngle >= startAngle && pointAngle <= endAngle;
   } else {
     return pointAngle >= startAngle || pointAngle <= endAngle;
   }
+}
+
+export function isShowEvent(event){
+    let result = true
+    let now = new Date()
+    let endEvent = new Date(event.end)
+    // console.log(Math.abs( now.getTime()) - endEvent.getTime() + event.description)
+    if (now > endEvent && (now.getTime() - endEvent.getTime()) > 7200000){
+      result = false
+    }
+    return result
+  }
+
+export function getTimeDifference(start, end) {
+  const diffMs = end.getTime() - start.getTime();
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  return { hours, minutes };
 }

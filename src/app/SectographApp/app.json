@@ -25,7 +25,8 @@
       "module": {
         "page": {
           "pages": [
-            "page/index"
+            "page/index",
+            "page/event"
           ]
         },
         "app-side": {
@@ -45,7 +46,7 @@
   },
   "i18n": {
     "en-US": {
-      "appName": "Empty"
+      "appName": "VisualTimePlaner"
     }
   },
   "defaultLanguage": "en-US"
