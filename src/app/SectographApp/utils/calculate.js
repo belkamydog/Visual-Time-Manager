@@ -34,16 +34,6 @@ export function isPointInSector(x, y, centerX, centerY, radius, startAngle, endA
   }
 }
 
-export function isShowEvent(event){
-    let result = true
-    let now = new Date()
-    let endEvent = new Date(event.end)
-    if (now > endEvent && (now.getTime() - endEvent.getTime()) > 7200000){
-      result = false
-    }
-    return result
-  }
-
 export function getTimeDifference(start, end) {
   const diffMs = end.getTime() - start.getTime();
   const hours = Math.floor(diffMs / (1000 * 60 * 60));

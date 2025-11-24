@@ -1,1 +1,1 @@
-# Sectograph app for ZEPP OS
+# Visual Time Manager app for ZEPP OS
