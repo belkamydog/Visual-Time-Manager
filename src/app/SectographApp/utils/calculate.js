@@ -1,8 +1,27 @@
+import { HOUR_MS } from "./Constants"
+
+
+function formatDateToISO(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}
+
 export function calculateAngles(event){
     let startAngle = convertTimeToAngle(event.start)
     let endAngle = convertTimeToAngle(event.end)
+    if (new Date(event.start) < (Date.now() - 2 * HOUR_MS) && (new Date(event.end) > (Date.now() - 2 * HOUR_MS))) {
+      startAngle = convertTimeToAngle(Date.now() - 2 * HOUR_MS)
+    }
+    else if(new Date(event.end) > Date.now + 10 * HOUR_MS){
+      endAngle = convertTimeToAngle(Date.now() + 10 * HOUR_MS)
+    }
     startAngle = startAngle > endAngle ? (startAngle-360) : startAngle
-    // console.log("Start Angle:" + startAngle + " " + "EndAngle " + endAngle)
     return {startAngle, endAngle}
 }
 

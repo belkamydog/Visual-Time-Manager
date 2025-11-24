@@ -30,19 +30,19 @@ export class EventsManager {
     uploadEventFromFile(){
       /** Mock */
       let loadedEvents =  [
-        { start: '2025-11-23T00:00:00', end: '2025-11-21T01:00:00', description: 'Do nothing', color: '0x2E8B57' },
-        { start: '2025-11-23T23:00:00', end: '2025-11-21T24:00:00', description: 'Sport', color: '0x1E90FF'},
+        // { start: '2025-11-23T00:00:00', end: '2025-11-21T01:00:00', description: 'Do nothing', color: '0x2E8B57' },
+        // { start: '2025-11-23T23:00:00', end: '2025-11-21T24:00:00', description: 'Sport', color: '0x1E90FF'},
 
         
-        { start: '2025-11-23T15:00:00', end: '2025-11-21T18:08:00', description: 'Time of tea', color: '0xFFD700'},
+        // { start: '2025-11-23T15:00:00', end: '2025-11-21T18:08:00', description: 'Time of tea', color: '0xFFD700'},
 
-        { start: '2025-11-23T00:00:00', end: '2025-11-21T01:00:00', description: 'DieHard', color: '0x2E8B57' },
-        { start: '2025-11-23T06:06:00', end: '2025-11-23T08:00:00', description: 'Do work', color: '0x1E90FF'},
+        // { start: '2025-11-23T00:00:00', end: '2025-11-21T01:00:00', description: 'DieHard', color: '0x2E8B57' },
+        // { start: '2025-11-24T20:00:00', end: '2025-11-24T22:00:00', description: 'Do work', color: '0x1E90FF'},
 
-        { start: '2025-11-22T19:00:00', end: '2025-11-21T21:00:00', description: 'Time discussion', color: '0xFFFFCC'}, 
-        { start: '2025-11-22T19:00:00', end: '2025-11-22T21:00:00', description: 'Love Time', color: '0xFF6344'}, 
+        // { start: '2025-11-24T21:00:00', end: '2025-11-25T01:30:00', description: 'Time discussion', color: '0xFFFFCC'}, 
+        // { start: '2025-11-24T20:00:00', end: '2025-11-24T21:00:00', description: 'Love Time', color: '0xFF6344'}, 
 
-        { start: '2025-11-24T04:00:00', end: '2025-11-21T5:00:00', description: 'Time of coffee', color: '0xFFD700'}
+        // { start: '2025-11-24T14:00:00', end: '2025-11-24T15:00:00', description: 'Time of coffee', color: '0xFFD700'}
       ]
       for (const ev of loadedEvents){
         if (this.eventsFilter(ev)){

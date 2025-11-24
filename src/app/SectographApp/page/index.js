@@ -1,6 +1,7 @@
 import { getText } from '@zos/i18n'
 import * as Styles from 'zosLoader:./index.[pf].layout.js'
 import { calculateAngles, isPointInSector , convertTimeToAngle} from '../utils/calculate';
+import { getIntervalTime } from '../utils/prepare';
 import hmUI from '@zos/ui'
 import {log} from '@zos/utils'
 import { push } from '@zos/router'
@@ -46,7 +47,7 @@ Page({
     })
   },
 
-  updateWfNumbers() {
+  initWfNumbers() {
     const centerX = 240;
     const centerY = 240;
     const radius = 200;
@@ -71,7 +72,7 @@ Page({
       const angleInRadians = num.angle * Math.PI / 180;
       const x = centerX + radius * Math.cos(angleInRadians) - 20;
       const y = centerY + radius * Math.sin(angleInRadians) - 20;
-      const currentTimeDigit = now.getHours() > num.number && num.number < now.getHours()-1 ? num.number + 12 : num.number
+      const currentTimeDigit = now.getHours()-2 > num.number && num.number < now.getHours()-1 ? num.number + 12 : num.number
       this.widgets.wfNumbers[`_${num.number}`] = hmUI.createWidget(hmUI.widget.TEXT, {
         x: Math.round(x),
         y: Math.round(y),
@@ -114,6 +115,7 @@ Page({
   },
 
   updateWidgets(){
+    this.updateWfNumbers()
     this.destroyArrow.setProperty(hmUI.prop.ANGLE, convertTimeToAngle(new Date() - HOUR_MS*2))
     this.digitTime.setProperty(hmUI.prop.TEXT, addZero(this.timeSensor.getHours().toString()) + 
                               ':' + addZero(this.timeSensor.getMinutes().toString()))
@@ -167,8 +169,38 @@ Page({
     })
   },
 
+  renderSectorInfo(data, startAngle, endAngle) {
+    hmUI.createWidget(hmUI.widget.TEXT, {
+      w: 240*2,
+      h: 240*2,
+      text: data,
+      color: 0x2E8B57,
+      text_size: 22,
+      start_angle: startAngle,
+      end_angle: endAngle,
+      radius: 180,
+      mode: 0,
+      align_h: hmUI.align.CENTER_H,
+      align_v: hmUI.align.CENTER_V
+    })
+    // this.canvas.drawText({
+    //   x:0,
+    //   y:0,
+    //   text: data,
+    //   color: 0x2E8B57,
+    //   text_size: 22,
+    //   start_angle: startAngle,
+    //   end_angle: endAngle,
+    //   radius: 180,
+    //   mode: 0,
+    //   align_h: hmUI.align.CENTER_H,
+    //   align_v: hmUI.align.CENTER_V
+    // })
+  },
+
   drawEvent(event){
     let {startAngle, endAngle} = calculateAngles(event)
+    // this.renderSectorInfo(getIntervalTime(event), startAngle, endAngle)
     this.canvas.drawArc({
       center_x: 240,
       center_y: 240,
@@ -176,8 +208,9 @@ Page({
       radius_y: 225,
       start_angle: startAngle-90,
       end_angle: endAngle-90,
-      color: event.color,
+      color: event.color
     })
+    
   },
 
   renderEvents(events){
@@ -186,12 +219,11 @@ Page({
     }
   },
 
-
   onInit(){
     // this.initBackground()
-    this.updateWfNumbers()
-    this.initCanvas()
+    this.initWfNumbers()
     this.initArrows()
+    this.initCanvas()
     this.initDigitalTime()
     this.renderEvents(DayEvents.getListOfCurrentDayEvents())
   },
