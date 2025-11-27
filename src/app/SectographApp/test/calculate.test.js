@@ -1,5 +1,11 @@
 // import { convertTimeToAngle, calculateAngles } from "../utils/calculate";
 
+
+test("mock", () => {
+
+  expect(1).toBe(1);
+});
+
 // test("0 h => 0 deg", () => {
 //   let time = {h: 0, m: 0}
 //   const res = convertTimeToAngle(time);

@@ -1,14 +1,16 @@
 import { getText } from '@zos/i18n'
 import * as Styles from 'zosLoader:./index.[pf].layout.js'
-import { calculateAngles, isPointInSector , convertTimeToAngle} from '../utils/calculate';
-import { getIntervalTime } from '../utils/prepare';
 import hmUI from '@zos/ui'
 import {log} from '@zos/utils'
 import { push } from '@zos/router'
 import { Time } from '@zos/sensor'
-import { addZero } from '../utils/prepare';
-import { DayEvents} from '../utils/Globals';
+import { DayEvents, wfNumbers} from '../utils/Globals';
+import { onGesture, GESTURE_LEFT, GESTURE_UP } from '@zos/interaction'
 import { HOUR_MS } from '../utils/Constants';
+import { EventsManager } from '../utils/EventsManager';
+import { Event } from '../utils/Event';
+import { writeFileSync, readFileSync } from '@zos/fs'
+
 
 
 Page({
@@ -39,6 +41,21 @@ Page({
     timeSensor: null,
   },
 
+
+  registerGes(){
+    onGesture({
+        callback: (event) => {
+          if (event === GESTURE_LEFT) {
+            // DayEvents.getListOfCurrentDayEvents()
+            push({
+              url: 'page/add_new_event/description',
+            })
+          }
+          return true
+        },
+      })
+  },
+
   initBackground(){
     this.background = hmUI.createWidget(hmUI.widget.IMG, {
       x: 0,
@@ -51,29 +68,15 @@ Page({
     const centerX = 240;
     const centerY = 240;
     const radius = 200;
-
-    const numbers = [
-      { number: 12, angle: -90 },
-      { number: 1, angle: -60 },
-      { number: 2, angle: -30 },
-      { number: 3, angle: 0 },
-      { number: 4, angle: 30 },
-      { number: 5, angle: 60 },
-      { number: 6, angle: 90 },
-      { number: 7, angle: 120 },
-      { number: 8, angle: 150 },
-      { number: 9, angle: 180 },
-      { number: 10, angle: 210 },
-      { number: 11, angle: 240 }
-    ];
-
-    const now = new Date()
-    numbers.forEach(num => {
-      const angleInRadians = num.angle * Math.PI / 180;
+    wfNumbers.initWatchFace(new Date().getHours())
+    const numbers = wfNumbers.getTimePointDigits()
+    let angle = -90
+    for (let i = 0; i < 12; i++){
+      const angleInRadians = angle * Math.PI / 180;
       const x = centerX + radius * Math.cos(angleInRadians) - 20;
       const y = centerY + radius * Math.sin(angleInRadians) - 20;
-      const currentTimeDigit = now.getHours()-2 > num.number && num.number < now.getHours()-1 ? num.number + 12 : num.number
-      this.widgets.wfNumbers[`_${num.number}`] = hmUI.createWidget(hmUI.widget.TEXT, {
+      angle += 30
+      this.widgets.wfNumbers[`_${i}`] = hmUI.createWidget(hmUI.widget.TEXT, {
         x: Math.round(x),
         y: Math.round(y),
         w: 40,
@@ -83,9 +86,9 @@ Page({
         align_h: hmUI.align.CENTER_H,
         align_v: hmUI.align.CENTER_V,
         text_style: hmUI.text_style.NONE,
-        text: currentTimeDigit
+        text: numbers[i]
       });
-    });
+    }
   },
 
   initArrows(){
@@ -98,7 +101,7 @@ Page({
       center_y: 240,
       pos_x: 240,
       pos_y: 0,
-      angle: convertTimeToAngle(new Date() - HOUR_MS*2),
+      angle: EventsManager.convertTimeToAngle(new Date() - HOUR_MS*2),
       src: 'arrows/minute.png'
     })
     this.hourArrow = hmUI.createWidget(hmUI.widget.TIME_POINTER, {
@@ -114,18 +117,26 @@ Page({
     })
   },
 
+  updateWfNumbers(){
+    wfNumbers.updateWatchFaceDigit(new Date().getHours())
+    const numbers = wfNumbers.getTimePointDigits()
+    for (let i = 0; i < 12; i++){
+      this.widgets.wfNumbers[`_${i}`].setProperty(hmUI.prop.TEXT, numbers[i])
+    }
+  },
+
   updateWidgets(){
     this.updateWfNumbers()
-    this.destroyArrow.setProperty(hmUI.prop.ANGLE, convertTimeToAngle(new Date() - HOUR_MS*2))
-    this.digitTime.setProperty(hmUI.prop.TEXT, addZero(this.timeSensor.getHours().toString()) + 
-                              ':' + addZero(this.timeSensor.getMinutes().toString()))
+    this.destroyArrow.setProperty(hmUI.prop.ANGLE, EventsManager.convertTimeToAngle(new Date() - HOUR_MS * 2))
+    this.digitTime.setProperty(hmUI.prop.TEXT, Event.addZero(this.timeSensor.getHours().toString()) + 
+                              ':' + Event.addZero(this.timeSensor.getMinutes().toString()))
       this.canvas.clear({
         x: 0,
         y: 0,
         w: 480,
         h: 480
       })
-      this.renderEvents(DayEvents.getListOfCurrentDayEvents())   
+      this.renderEvents(DayEvents.getListOfCurrentDayEvents())
   },
 
   initDigitalTime(){
@@ -140,10 +151,10 @@ Page({
       align_h: hmUI.align.CENTER_H,
       align_v: hmUI.align.CENTER_V,
       text_style: hmUI.text_style.NONE,
-      text: addZero(this.timeSensor.getHours().toString()) + ':' + addZero(this.timeSensor.getMinutes().toString())
+      text: Event.addZero(this.timeSensor.getHours().toString()) + ':' + Event.addZero(this.timeSensor.getMinutes().toString())
     })
     const self = this
-    this.timeSensor.onPerMinute(function() {
+    this.timeSensor.onPerMinute(function cb() {
       self.updateWidgets()                  
     })
   },
@@ -158,8 +169,7 @@ Page({
     })
     this.canvas.addEventListener(hmUI.event.CLICK_UP, function cb(info) {
       for (const event of DayEvents.getListOfCurrentDayEvents()){
-        let {startAngle, endAngle } = calculateAngles(event)
-        if (isPointInSector(info.x, info.y, 240, 240, 240, startAngle, endAngle)){
+        if (EventsManager.isThisEvent(info.x, info.y, event)){
           push({
             url: 'page/event',
             params: JSON.stringify(event),
@@ -175,14 +185,29 @@ Page({
       h: 240*2,
       text: data,
       color: 0x2E8B57,
-      text_size: 22,
+      text_size: 17,
       start_angle: startAngle,
       end_angle: endAngle,
-      radius: 180,
+      radius: 240,
       mode: 0,
       align_h: hmUI.align.CENTER_H,
       align_v: hmUI.align.CENTER_V
     })
+
+    //   hmUI.createWidget(hmUI.widget.TEXT, {
+    //   w: 240*2,
+    //   h: 240*2,
+    //   text: data,
+    //   color: 0x2E8B57,
+    //   text_size: 17,
+    //   start_angle: startAngle,
+    //   end_angle: endAngle,
+    //   radius: 240,
+    //   mode: 0,
+    //   align_h: hmUI.align.CENTER_H,
+    //   align_v: hmUI.align.CENTER_V
+    // })
+
     // this.canvas.drawText({
     //   x:0,
     //   y:0,
@@ -199,18 +224,17 @@ Page({
   },
 
   drawEvent(event){
-    let {startAngle, endAngle} = calculateAngles(event)
-    // this.renderSectorInfo(getIntervalTime(event), startAngle, endAngle)
+    const ev = new Event(event)
+    // this.renderSectorInfo(ev.getPeriod(), event.startAngle, event.endAngle)
     this.canvas.drawArc({
       center_x: 240,
       center_y: 240,
       radius_x: 225,
       radius_y: 225,
-      start_angle: startAngle-90,
-      end_angle: endAngle-90,
+      start_angle: event.startAngle-90,
+      end_angle: event.endAngle-90,
       color: event.color
     })
-    
   },
 
   renderEvents(events){
@@ -219,12 +243,19 @@ Page({
     }
   },
 
-  onInit(){
+  onInit(params){
     // this.initBackground()
+    this.registerGes()
     this.initWfNumbers()
     this.initArrows()
     this.initCanvas()
     this.initDigitalTime()
+    // if (params== 'clear')     this.canvas.clear({
+    //     x: 0,
+    //     y: 0,
+    //     w: 480,
+    //     h: 480
+    //   })
     this.renderEvents(DayEvents.getListOfCurrentDayEvents())
   },
 

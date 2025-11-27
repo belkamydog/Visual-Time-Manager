@@ -1,9 +1,5 @@
 import { getText } from '@zos/i18n'
 
-import { addZero } from "./prepare"
-import { getTimeDifference } from "./calculate"
-
-
 export class Event {
     description
     start
@@ -22,18 +18,22 @@ export class Event {
     }
 
     getStatus(){
-        let now = new Date()
+        const now = new Date()
         let result = ''
         if (now < this.start){
-            let {hours, minutes} = getTimeDifference(now, this.start)
-            result = getText('After')+': ' + hours + getText('h') + ' ' + minutes + getText('m')
+            const {hours, minutes} = Event.calculateTimeDifference(now, this.start)
+            result = getText('After')+': '
+            result += hours > 0 ? hours + getText('h') : ''
+            result += minutes > 0 ?  ' ' +  minutes + getText('m') : ''
         }
         else if (now > this.end){
-            let {hours, minutes} = getTimeDifference(this.end, now)
-            result = hours +  getText('h') + ' ' + minutes +  getText('m')+ ' ' +  getText('ago')         
+            const {hours, minutes} = Event.calculateTimeDifference(this.end, now)
+            result += hours > 0 ? hours + getText('h') : ''
+            result += minutes > 0 ?  ' ' +  minutes + getText('m') + ' ' : ''
+            result += ' ' + getText('ago')         
         }
         else {
-            let {hours, minutes} = getTimeDifference(now, this.end)
+            const {hours, minutes} = Event.calculateTimeDifference(now, this.end)
             result += getText('Left') + ': '
             if (hours == 0) result += minutes + ' ' +getText('m')
             else result += hours + getText('h') + ' ' + minutes + getText('m')
@@ -42,10 +42,10 @@ export class Event {
     }
 
     getPeriod(){
-        return  addZero(this.start.getHours().toString()) + ':' +
-                addZero(this.start.getMinutes().toString()) + ' - ' +
-                addZero(this.end.getHours().toString()) + ':' +
-                addZero(this.end.getMinutes().toString())
+        return  Event.addZero(this.start.getHours().toString()) + ':' +
+                Event.addZero(this.start.getMinutes().toString()) + ' - ' +
+                Event.addZero(this.end.getHours().toString()) + ':' +
+                Event.addZero(this.end.getMinutes().toString())
 
     }
 
@@ -62,4 +62,15 @@ export class Event {
 
     getDescription(){ return this.description }
 
+    static calculateTimeDifference(start, end) {
+        const diffMs = end.getTime() - start.getTime();
+        const hours = Math.floor(diffMs / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        return { hours, minutes };
+    }
+
+    static addZero(str){
+    let result = str >= 10 ? str : '0'+ str
+    return result.toString()
+    }
 }
