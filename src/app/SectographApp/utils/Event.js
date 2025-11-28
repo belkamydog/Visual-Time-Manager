@@ -1,9 +1,11 @@
 import { getText } from '@zos/i18n'
 
 export class Event {
+    id
     description
     start
     end
+    color
 
     remained_time
     ago_time
@@ -12,6 +14,7 @@ export class Event {
     level
 
     constructor(event){
+        this.id = event.id
         this.description = event.description
         this.start = new Date(event.start)
         this.end = new Date (event.end)

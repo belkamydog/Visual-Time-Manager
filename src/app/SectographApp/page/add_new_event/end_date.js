@@ -61,7 +61,7 @@ Page({
                 endDate.setHours(currentValues.hour)
                 endDate.setMinutes(currentValues.minute)
                 const current_event = JSON.parse(params)
-                const result = {description: current_event.description, start: current_event.start, end: endDate.toISOString(), color: 0xFFFFCC}
+                const result = {description: current_event.description, start: current_event.start, end: endDate.toISOString()}
                 DayEvents.addEvent(result)
                  push({
                     url: 'page/index',

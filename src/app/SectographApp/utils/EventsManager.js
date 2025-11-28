@@ -1,6 +1,8 @@
 import { log } from "@zos/utils"
-import { HOUR_MS } from "./Constants"
+import { HOUR_MS, COLORS } from "./Constants"
 import { readFileSync, writeFileSync } from '@zos/fs'
+import { color } from "chart.js/helpers"
+
 
 /**
  * The class responsible for load, preparing and receiving information for rendering
@@ -8,6 +10,7 @@ import { readFileSync, writeFileSync } from '@zos/fs'
 export class EventsManager {
     logger = log.getLogger('EventManager.js')
     listOfCurrentDayEvents = []
+    color_index = 0
 
     constructor(){
       // writeFileSync({
@@ -51,53 +54,25 @@ export class EventsManager {
       return result 
     }
 
-    /** Add to event json event startAngle  and event endAngle*/
-    prepareEvents(events){
-      for (const ev of events){
-        if (this.eventsFilter(ev)){
-          ev.angle = this.calculateAngles(ev)
-          this.listOfCurrentDayEvents.push(ev)
-        }
-      }
-    }
-
     /**Upload events from file /data/events  with filtration*/
     uploadActualEvents(){
-      const file = readFileSync({
-        path: 'events',
-        options: {
-          encoding: 'utf8',
-        },
-      })
+      const file = EventsManager.readEvents()
       if (file && file.trim()){
         const loadedEvents = JSON.parse(file)
         for (const ev of loadedEvents){
           if (this.eventsFilter(ev)){
-            const angles = EventsManager.calculateAngles(ev, Date.now())
-            const t = {
-              start: ev.start,
-              end: ev.end, 
-              description: ev.description,
-              color: ev.color,
-              startAngle: angles.startAngle,
-              endAngle: angles.endAngle
-            }
-            this.listOfCurrentDayEvents.push(t)
-            }
+            const updatedEvent = EventsManager.addIdColorAnglesToEvent(ev)
+            this.listOfCurrentDayEvents.push(updatedEvent)
           }
-          console.log('GET LIST OF EVENTS: '+ JSON.stringify(this.listOfCurrentDayEvents))
+        }
+        console.log('GET LIST OF EVENTS: '+ JSON.stringify(this.listOfCurrentDayEvents))
       }
       else this.logger.log('0 events loaded')
     }
 
     addEvent(event){
-      const loaded_events = readFileSync({
-        path: 'events',
-        options: {
-          encoding: 'utf8',
-        }
-      })
-      console.log('BEFORE ADD FILE: ' + loaded_events)
+      const loaded_events = EventsManager.readEvents()
+      // console.log('BEFORE ADD FILE: ' + loaded_events)
       let result = []
       if (loaded_events && loaded_events.trim()){
          for (const ev of JSON.parse(loaded_events)){
@@ -106,22 +81,8 @@ export class EventsManager {
          result.push(event)
       }
       else result.push(event)
-      writeFileSync({
-        path: 'events',
-        data: JSON.stringify(result),
-        options: {
-            encoding: 'utf8',
-        }
-      })
+      EventsManager.writeEvents(result)
       this.uploadActualEvents()
-      const loaded_events2 = readFileSync({
-        path: 'events',
-        options: {
-          encoding: 'utf8',
-        }
-      })
-      console.log('AFTER ADD FILE: ' + loaded_events2)
-      // console.log("LIST: " + JSON.stringify(this.listOfCurrentDayEvents))
     }
 
     getListOfCurrentDayEvents(){
@@ -132,6 +93,44 @@ export class EventsManager {
         console.log('LIST: ' + JSON.stringify(e))
       })
       return this.listOfCurrentDayEvents
+    }
+
+    static readEvents(){
+      return readFileSync({
+          path: 'events',
+          options: {
+            encoding: 'utf8',
+          }
+        })
+    }
+
+    static writeEvents(events){
+      writeFileSync({
+        path: 'events',
+        data: JSON.stringify(events),
+        options: {
+            encoding: 'utf8',
+        }
+      })
+    }
+
+    static generateEventId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    }
+
+    static addIdColorAnglesToEvent(event){
+       const angles = EventsManager.calculateAngles(event, Date.now())
+       const result = {
+          id: EventsManager.generateEventId(),
+          start: event.start,
+          end: event.end, 
+          description: event.description,
+          startAngle: angles.startAngle,
+          endAngle: angles.endAngle,
+          color: COLORS[this.color_index]
+        }
+        color_index = color_index == COLORS.length-1 ? 0 : color_index
+        return result
     }
 
     static calculateAngles(event, timeNow){

@@ -3,6 +3,7 @@ import * as Styles from 'zosLoader:./index.[pf].layout.js'
 import hmUI from '@zos/ui'
 import { back, home } from '@zos/router'
 import { Event } from '../utils/Event'
+import { DayEvents } from '../utils/Globals'
 
 Page ({
     widgets :{
@@ -11,6 +12,8 @@ Page ({
         progressArcBackground: null,
         timePeriod: null,
         backBtn: null,
+        editBtn: null,
+        deleteBtn: null,
         previousEventBtn: null,
         nextEventBtn: null,
         eventStatus: null
@@ -20,16 +23,16 @@ Page ({
         const current_event = JSON.parse(params)
         const pageData = new Event(current_event)
         this.eventLabel = hmUI.createWidget(hmUI.widget.TEXT, {
-            x: 150,
+            x: 120,
             y: 200,
-            w: 288,
+            w: 300,
             h: 46,
             color: 0xffffff,
             text_size: 36,
             text: current_event.description
         }),
         this.timePeriod = hmUI.createWidget(hmUI.widget.TEXT, {
-            x: 150,
+            x: 170,
             y: 250,
             w: 288,
             h: 46,
@@ -63,9 +66,35 @@ Page ({
             w: 70,
             h: 70,
             radius: 35,
-            normal_color: 0xfc6950,
-            press_color: 0xfeb4a8,
-            text: 'X',
+            normal_color: 0x006400,
+            press_color: 0x006400,
+            text: 'Back',
+            click_func: (button_widget) => {
+                back()
+            }
+        }),
+        this.editBtn = hmUI.createWidget(hmUI.widget.BUTTON, {
+            x: 105,
+            y: 310,
+            w: 70,
+            h: 70,
+            radius: 35,
+            normal_color: 0xBDB76B,
+            press_color: 0xBDB76B,
+            text: 'Edit',
+            click_func: (button_widget) => {
+                back()
+            }
+        }),
+        this.deleteBtn = hmUI.createWidget(hmUI.widget.BUTTON, {
+            x: 305,
+            y: 310,
+            w: 70,
+            h: 70,
+            radius: 35,
+            normal_color: 0xFF4500,
+            press_color: 0xFF6347,
+            text: 'Delete',
             click_func: (button_widget) => {
                 back()
             }

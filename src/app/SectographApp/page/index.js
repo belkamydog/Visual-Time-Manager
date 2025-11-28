@@ -250,12 +250,6 @@ Page({
     this.initArrows()
     this.initCanvas()
     this.initDigitalTime()
-    // if (params== 'clear')     this.canvas.clear({
-    //     x: 0,
-    //     y: 0,
-    //     w: 480,
-    //     h: 480
-    //   })
     this.renderEvents(DayEvents.getListOfCurrentDayEvents())
   },
 
