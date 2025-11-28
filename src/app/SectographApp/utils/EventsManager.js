@@ -23,22 +23,6 @@ export class EventsManager {
       // this.uploadActualEvents()
     }
 
-    syncEvents(){
-      /** Mock */
-      let mockEvents =  [
-        { start: '2025-11-27T05:00:00', end: '2025-11-27T09:30:00', description: 'Time discussion', color: '0xFFFFCC'}, 
-        { start: '2025-11-27T12:00:00', end: '2025-11-27T13:00:00', description: 'Love Time', color: '0xFF6344'}, 
-        { start: '2025-11-27T18:00:00', end: '2025-11-27T21:00:00', description: 'Time of coffee', color: '0xFFD700'}
-      ]
-      writeFileSync({
-        path: 'events',
-        data: JSON.stringify(mockEvents),
-        options: {
-            encoding: 'utf8',
-        },
-      })
-    }
-
     /**Filter all loaded events [2h - now +10h] */
     eventsFilter(event){
       let result = false
@@ -61,7 +45,7 @@ export class EventsManager {
         const loadedEvents = JSON.parse(file)
         for (const ev of loadedEvents){
           if (this.eventsFilter(ev)){
-            const updatedEvent = EventsManager.addIdColorAnglesToEvent(ev)
+            const updatedEvent = EventsManager.addColorAnglesToEvent(ev)
             this.listOfCurrentDayEvents.push(updatedEvent)
           }
         }
@@ -72,16 +56,86 @@ export class EventsManager {
 
     addEvent(event){
       const loaded_events = EventsManager.readEvents()
-      // console.log('BEFORE ADD FILE: ' + loaded_events)
       let result = []
       if (loaded_events && loaded_events.trim()){
          for (const ev of JSON.parse(loaded_events)){
-            result.push(ev)
+            const eventWithId = {
+              id: !event.id ? EventsManager.generateEventId(): event.id,
+              start: ev.start,
+              end: ev.end, 
+              description: ev.description,
+            } 
+            result.push(eventWithId)
          }
          result.push(event)
       }
       else result.push(event)
       EventsManager.writeEvents(result)
+      this.uploadActualEvents()
+    }
+
+    editStartDate(event){
+      const loadedEvents = EventsManager.readEvents()
+      let result = []
+      if (loadedEvents && loadedEvents.trim()){
+        const events = JSON.parse(loadedEvents)
+        for (const e of events){
+          if (e.id == event.id) {
+            e.start = event.start
+          }
+          result.push(e)
+        }
+        EventsManager.writeEvents(result)
+      }
+      this.uploadActualEvents()
+    }
+
+    editEndDate(event){
+      const loadedEvents = EventsManager.readEvents()
+      let result = []
+      if (loadedEvents && loadedEvents.trim()){
+        const events = JSON.parse(loadedEvents)
+        for (const e of events){
+          if (e.id == event.id) {
+            e.end = event.end
+          }
+          result.push(e)
+        }
+        EventsManager.writeEvents(result)
+      }
+      this.uploadActualEvents()
+    }
+
+    editEventDescription(event){
+      const loadedEvents = EventsManager.readEvents()
+      let result = []
+      if (loadedEvents && loadedEvents.trim()){
+        const events = JSON.parse(loadedEvents)
+        for (const e of events){
+          console.log('ID ' + event.id)
+          if (e.id == event.id) {
+            e.description = event.description
+          }
+          result.push(e)
+        }
+        EventsManager.writeEvents(result)
+      }
+      this.uploadActualEvents()
+    }
+
+    deleteEventById(id){
+      const loadedEvents = EventsManager.readEvents()
+      let result = []
+      if (loadedEvents && loadedEvents.trim()){
+        const events = JSON.parse(loadedEvents)
+        for (const e of events){
+          if (e.id != id) {
+            console.log('DEl ' + JSON.stringify(e))
+            result.push(e)
+          }
+        }
+        EventsManager.writeEvents(result)
+      }
       this.uploadActualEvents()
     }
 
@@ -118,16 +172,16 @@ export class EventsManager {
       return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
 
-    static addIdColorAnglesToEvent(event){
+    static addColorAnglesToEvent(event){
        const angles = EventsManager.calculateAngles(event, Date.now())
        const result = {
-          id: EventsManager.generateEventId(),
+          id: event.id,
           start: event.start,
           end: event.end, 
           description: event.description,
           startAngle: angles.startAngle,
           endAngle: angles.endAngle,
-          color: COLORS[this.color_index]
+          color: COLORS[10]
         }
         color_index = color_index == COLORS.length-1 ? 0 : color_index
         return result
@@ -163,9 +217,11 @@ export class EventsManager {
       }
       let pointAngle = 90 - Math.atan2(240 - y, x - 240) * (180 / Math.PI);
       if (pointAngle < 0) pointAngle = 360 + pointAngle
+      console.log('EVENT IS THIS '+ JSON.stringify(event) + ' ' + pointAngle)
 
       if (event.startAngle <= event.endAngle) {
-        if (event.startAngle < 0 ) pointAngle = pointAngle - 360
+        // if (event.startAngle < 0 ) pointAngle = pointAngle - 360 ????
+
         return pointAngle >= event.startAngle && pointAngle <= event.endAngle;
       } else {
         return pointAngle >= event.startAngle || pointAngle <= event.endAngle;

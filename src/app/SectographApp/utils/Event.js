@@ -63,6 +63,12 @@ export class Event {
         return this.level
     }
 
+    getColor(){
+        return this.color
+    }
+
+    getId() {return this.id}
+
     getDescription(){ return this.description }
 
     static calculateTimeDifference(start, end) {

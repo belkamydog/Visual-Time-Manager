@@ -1,6 +1,7 @@
 import { push } from '@zos/router'
 import { Time } from '@zos/sensor'
 import { widget, createWidget } from '@zos/ui'
+import { DayEvents } from '../../utils/Globals'
 
 Page({
     onInit(params) {
@@ -50,12 +51,27 @@ Page({
                 startDate.setDate(currentValues.day)
                 startDate.setHours(currentValues.hour)
                 startDate.setMinutes(currentValues.minute)
-                const current_event = JSON.parse(params)
-                const result = {description: current_event.description, start: startDate}
-                 push({
-                    url: 'page/add_new_event/end_date',
-                    params: result,
-                })
+                let result = ''
+                if (params && params !== 'undefined' && typeof params === 'string' && params.trim().length > 0 
+                && JSON.parse(params).id) {
+                    
+                    console.log('PARAMS START : ' + params + '!!!!')
+                    result = JSON.parse(params)
+                    result.start = startDate
+                    DayEvents.editStartDate(result)
+                    push({
+                        url: 'page/event',
+                        params: JSON.stringify(result),
+                    })
+                }
+                else {
+                    const current_event = JSON.parse(params)
+                    result = {description: current_event.description, start: startDate}
+                     push({
+                        url: 'page/add_new_event/end_date',
+                        params: result,
+                    })
+                }
             }
         }
 

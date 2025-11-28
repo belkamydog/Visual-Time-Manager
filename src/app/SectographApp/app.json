@@ -27,6 +27,7 @@
           "pages": [
             "page/index",
             "page/event",
+            "page/edit",
             "page/add_new_event/start_date",
             "page/add_new_event/end_date",
             "page/add_new_event/description"

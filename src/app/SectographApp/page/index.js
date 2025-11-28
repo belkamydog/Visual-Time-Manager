@@ -9,8 +9,6 @@ import { onGesture, GESTURE_LEFT, GESTURE_UP } from '@zos/interaction'
 import { HOUR_MS } from '../utils/Constants';
 import { EventsManager } from '../utils/EventsManager';
 import { Event } from '../utils/Event';
-import { writeFileSync, readFileSync } from '@zos/fs'
-
 
 
 Page({
@@ -46,7 +44,7 @@ Page({
     onGesture({
         callback: (event) => {
           if (event === GESTURE_LEFT) {
-            // DayEvents.getListOfCurrentDayEvents()
+            DayEvents.getListOfCurrentDayEvents()
             push({
               url: 'page/add_new_event/description',
             })
@@ -170,6 +168,7 @@ Page({
     this.canvas.addEventListener(hmUI.event.CLICK_UP, function cb(info) {
       for (const event of DayEvents.getListOfCurrentDayEvents()){
         if (EventsManager.isThisEvent(info.x, info.y, event)){
+          console.log('CLICK SECTOR: ' + JSON.stringify(event))
           push({
             url: 'page/event',
             params: JSON.stringify(event),
