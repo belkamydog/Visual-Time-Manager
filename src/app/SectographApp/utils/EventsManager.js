@@ -1,8 +1,7 @@
 import { log } from "@zos/utils"
 import { HOUR_MS, COLORS } from "./Constants"
 import { readFileSync, writeFileSync } from '@zos/fs'
-import { color } from "chart.js/helpers"
-
+import { Event } from '../utils/Event'
 
 /**
  * The class responsible for load, preparing and receiving information for rendering
@@ -10,7 +9,7 @@ import { color } from "chart.js/helpers"
 export class EventsManager {
     logger = log.getLogger('EventManager.js')
     listOfCurrentDayEvents = []
-    color_index = 0
+    static color_index = 0
 
     constructor(){
       // writeFileSync({
@@ -38,6 +37,22 @@ export class EventsManager {
       return result 
     }
 
+    getListOfALlEvents(){
+      const file = EventsManager.readEvents()
+      const result = []
+      if (file && file.trim()){
+        let tmp = JSON.parse(file)
+        for (const ev of tmp){
+          console.log('EVENT ', JSON.stringify(new Event(ev)))
+          result.push(new Event(ev))
+        }
+      }
+      else {
+        this.logger.log('0 events loaded')
+      }
+      return result
+    }
+
     /**Upload events from file /data/events  with filtration*/
     uploadActualEvents(){
       const file = EventsManager.readEvents()
@@ -55,6 +70,7 @@ export class EventsManager {
     }
 
     addEvent(event){
+      console.log('ADD EVENT: ' + JSON.stringify(event))
       const loaded_events = EventsManager.readEvents()
       let result = []
       if (loaded_events && loaded_events.trim()){
@@ -64,6 +80,7 @@ export class EventsManager {
               start: ev.start,
               end: ev.end, 
               description: ev.description,
+              color: ev.color
             } 
             result.push(eventWithId)
          }
@@ -181,9 +198,8 @@ export class EventsManager {
           description: event.description,
           startAngle: angles.startAngle,
           endAngle: angles.endAngle,
-          color: COLORS[10]
+          color: event.color
         }
-        color_index = color_index == COLORS.length-1 ? 0 : color_index
         return result
     }
 

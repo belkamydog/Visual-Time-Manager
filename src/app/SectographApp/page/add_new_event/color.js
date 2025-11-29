@@ -1,0 +1,68 @@
+import { createWidget, widget, prop } from '@zos/ui'
+import { getText } from '@zos/i18n'
+import { px } from '@zos/utils'
+import { COLORS } from '../../utils/Constants'
+import { DayEvents } from '../../utils/Globals';
+import { push } from '@zos/router'
+import { color } from 'chart.js/helpers';
+
+
+
+Page({
+    onInit(params){
+        const title = createWidget(widget.TEXT, {
+            x: 140,
+            y: 50,
+            text: 'Event color',
+            text_size: 40,
+            w: 480,
+            h: 50,
+        })
+        const scrollList = createWidget(widget.VIEW_CONTAINER, {
+            x: 0,
+            y: 120,
+            w: 480,
+            h: 280,
+            pos_y: -80
+        })
+        for (let row = 0, color_i = 0; row < COLORS.length/4; row++){
+            for (let col = 0; col < 3; col++){
+                const currentColor = COLORS[color_i++]
+                const btn = scrollList.createWidget(widget.BUTTON, {
+                    x: 80 + 100 * col + 20,
+                    y: 80 + 100 * row,
+                    w: 80,
+                    h: 80,
+                    radius: 0,
+                    normal_color: currentColor,
+                    press_color: 0xfeb4a8,
+                    text: '',
+                    click_func: (color_i) => {
+                            let result = ''
+                        // if (params && params !== 'undefined' && typeof params === 'string' && params.trim().length > 0 
+                        //     && JSON.parse(params).id) {
+                            
+                        //     result = JSON.parse(params)
+                        //     result.end = endDate
+                        //     DayEvents.editEndDate(result)
+                        //     push({
+                        //         url: 'page/event',
+                        //         params: JSON.stringify(result),
+                        //     })
+                        // }
+                        // else {
+                            const current_event = JSON.parse(params)
+                            console.log('PARAMS IN COLOR ' + params)
+                            result = {description: current_event.description, start: current_event.start, end: current_event.end, color: currentColor}
+                            DayEvents.addEvent(result)
+                            push({
+                                url: 'page/index',
+                                params: 'clear'
+                            })
+                        // }
+                    }
+                })
+            }
+        }
+    }
+})

@@ -30,7 +30,7 @@ Page ({
             onCancel: (keyboardWidget, result) => {
                 back()
             },
-            text: ''
+            text: 'Event description'
         })
     }
 })

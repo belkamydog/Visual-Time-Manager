@@ -5,14 +5,17 @@ import {log} from '@zos/utils'
 import { push } from '@zos/router'
 import { Time } from '@zos/sensor'
 import { DayEvents, wfNumbers} from '../utils/Globals';
-import { onGesture, GESTURE_LEFT, GESTURE_UP } from '@zos/interaction'
+import { onGesture, GESTURE_LEFT, GESTURE_RIGHT } from '@zos/interaction'
 import { HOUR_MS } from '../utils/Constants';
 import { EventsManager } from '../utils/EventsManager';
 import { Event } from '../utils/Event';
+import { createModal, MODAL_CONFIRM } from '@zos/interaction'
+
 
 
 Page({
   logger: log.getLogger('index.js'),
+  newEventDialog,
   widgets:{
     canvas: null,
     background: null,
@@ -39,19 +42,41 @@ Page({
     timeSensor: null,
   },
 
-
   registerGes(){
     onGesture({
         callback: (event) => {
           if (event === GESTURE_LEFT) {
-            DayEvents.getListOfCurrentDayEvents()
+            this.initNewEventDialog()
+          }
+          else if (event === GESTURE_RIGHT) {
             push({
-              url: 'page/add_new_event/description',
+              url: 'page/list',
             })
           }
           return true
         },
       })
+  },
+
+
+  initNewEventDialog(){
+    const dialog = createModal({
+        content: 'Create new event?',
+        autoHide: false,
+        show: false,
+        onClick: (keyObj) => {
+            const { type } = keyObj
+            if (type === MODAL_CONFIRM) {
+              push({
+                url: 'page/add_new_event/description',
+              })
+                dialog.show(false)
+            } else {
+                dialog.show(false)
+            }
+        },
+    })
+    dialog.show(true) 
   },
 
   initBackground(){
@@ -163,7 +188,7 @@ Page({
       y: 0,
       w: 480,
       h: 480,
-      alpha: 50 
+      alpha: 100 
     })
     this.canvas.addEventListener(hmUI.event.CLICK_UP, function cb(info) {
       for (const event of DayEvents.getListOfCurrentDayEvents()){

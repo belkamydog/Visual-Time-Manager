@@ -2,13 +2,8 @@ import { push } from '@zos/router'
 import { Time } from '@zos/sensor'
 import { widget, createWidget } from '@zos/ui'
 import { DayEvents } from '../../utils/Globals'
-import { writeFileSync } from '@zos/fs'
-
-
-
 
 Page({
-
     onInit(params) {
         const time = new Time()
         let currentValues = {
@@ -77,10 +72,10 @@ Page({
                 else {
                     const current_event = JSON.parse(params)
                     result = {description: current_event.description, start: current_event.start, end: endDate.toISOString()}
-                    DayEvents.addEvent(result)
+                    // DayEvents.addEvent(result)
                      push({
-                        url: 'page/index',
-                        params: 'clear'
+                        url: 'page/add_new_event/color',
+                        params: JSON.stringify(result)
                     })
                 }
             }

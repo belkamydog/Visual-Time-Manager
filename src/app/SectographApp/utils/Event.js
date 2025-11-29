@@ -7,10 +7,10 @@ export class Event {
     end
     color
 
-    remained_time
     ago_time
-    status
+    date_period
     period
+    status
     level
 
     constructor(event){
@@ -18,9 +18,20 @@ export class Event {
         this.description = event.description
         this.start = new Date(event.start)
         this.end = new Date (event.end)
+        this.color = event.color
+        this.timePeriod()
+        this.eventStatus()
+        this.datePeriod()
+        this.eventLevel()
     }
 
-    getStatus(){
+    timePeriod(){
+        this.period =  Event.addZero(this.start.getHours().toString()) + ':' +
+            Event.addZero(this.start.getMinutes().toString()) + ' - ' +
+            Event.addZero(this.end.getHours().toString()) + ':' +
+            Event.addZero(this.end.getMinutes().toString())
+    }
+    eventStatus(){
         const now = new Date()
         let result = ''
         if (now < this.start){
@@ -41,31 +52,31 @@ export class Event {
             if (hours == 0) result += minutes + ' ' +getText('m')
             else result += hours + getText('h') + ' ' + minutes + getText('m')
         }
-        return result
+        this.status = result
     }
-
-    getPeriod(){
-        return  Event.addZero(this.start.getHours().toString()) + ':' +
-                Event.addZero(this.start.getMinutes().toString()) + ' - ' +
-                Event.addZero(this.end.getHours().toString()) + ':' +
-                Event.addZero(this.end.getMinutes().toString())
-
+    datePeriod(){
+        this.date_period= Event.addZero(this.start.getDate()) + '.' + Event.addZero(this.start.getMonth())
+        if (this.start.getDate() != this.end.getDate())
+            this.date_period +=  ' - ' + Event.addZero(this.end.getDate()) + '.' + Event.addZero(this.end.getMonth())
     }
-
-    getlevel(){
+    eventLevel(){
         let now = new Date()
         if (now > this.end) this.level = 100
         else if (now < this.start) this.level = 0
         else {
             this.level =  (now.getTime() - this.start.getTime()) / (this.end.getTime() - this.start.getTime()) * 100;
         }
-    
-        return this.level
     }
 
-    getColor(){
-        return this.color
-    }
+    getStatus(){ return this.status }
+
+    getPeriod(){ return this.period }
+
+    getDatePeriod(){ return this.date_period }
+
+    getlevel(){ return this.getlevel }
+
+    getColor(){ return this.color }
 
     getId() {return this.id}
 
@@ -79,7 +90,7 @@ export class Event {
     }
 
     static addZero(str){
-    let result = str >= 10 ? str : '0'+ str
-    return result.toString()
+        let result = str >= 10 ? str : '0'+ str
+        return result.toString()
     }
 }
