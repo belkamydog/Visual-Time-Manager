@@ -165,7 +165,7 @@ Page({
       w: 180,
       h: 180,
       color: 0x0000,
-      text_size: 70,
+      text_size: 67,
       font: 'fonts/Mechagrunge.ttf',
       align_h: align.CENTER_H,
       align_v: align.CENTER_V,
