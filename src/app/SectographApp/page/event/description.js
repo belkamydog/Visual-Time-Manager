@@ -22,7 +22,7 @@ Page ({
                 else {
                     event = {description: result.data}
                     push({
-                        url: 'page/add_new_event/start_date',
+                        url: 'page/event/start_date',
                         params: event,
                     })
                 }

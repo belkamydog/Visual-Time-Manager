@@ -1,6 +1,4 @@
 import { getText } from '@zos/i18n'
-import * as Styles from 'zosLoader:./index.[pf].layout.js'
-import hmUI from '@zos/ui'
 import {log} from '@zos/utils'
 import { push } from '@zos/router'
 import { Time } from '@zos/sensor'
@@ -9,14 +7,14 @@ import { onGesture, GESTURE_LEFT, GESTURE_RIGHT } from '@zos/interaction'
 import { HOUR_MS } from '../utils/Constants';
 import { EventsManager } from '../utils/EventsManager';
 import { Event } from '../utils/Event';
-import { createModal, MODAL_CONFIRM } from '@zos/interaction'
-
-
+import { styleColors } from '../utils/Constants'
+import { createWidget, widget, prop, align, event } from '@zos/ui'
 
 Page({
   logger: log.getLogger('index.js'),
-  newEventDialog,
+
   widgets:{
+    circle: null,
     canvas: null,
     background: null,
     hourArrow: null,
@@ -38,19 +36,13 @@ Page({
       _11: null,
     }
   },
-  sensors: {
-    timeSensor: null,
-  },
 
   registerGes(){
     onGesture({
         callback: (event) => {
           if (event === GESTURE_LEFT) {
-            this.initNewEventDialog()
-          }
-          else if (event === GESTURE_RIGHT) {
             push({
-              url: 'page/list',
+              url: 'page/menu',
             })
           }
           return true
@@ -58,32 +50,18 @@ Page({
       })
   },
 
-
-  initNewEventDialog(){
-    const dialog = createModal({
-        content: 'Create new event?',
-        autoHide: false,
-        show: false,
-        onClick: (keyObj) => {
-            const { type } = keyObj
-            if (type === MODAL_CONFIRM) {
-              push({
-                url: 'page/add_new_event/description',
-              })
-                dialog.show(false)
-            } else {
-                dialog.show(false)
-            }
-        },
+  initBg(){
+    this.circle = createWidget(widget.CIRCLE, {
+      center_x: 240,
+      center_y: 240,
+      radius: 227,
+      color: styleColors.white_smoke,
     })
-    dialog.show(true) 
-  },
-
-  initBackground(){
-    this.background = hmUI.createWidget(hmUI.widget.IMG, {
-      x: 0,
-      y: 0,
-      src: 'background.png'
+    this.circle = createWidget(widget.CIRCLE, {
+      center_x: 240,
+      center_y: 240,
+      radius: 225,
+      color: styleColors.black,
     })
   },
 
@@ -99,23 +77,23 @@ Page({
       const x = centerX + radius * Math.cos(angleInRadians) - 20;
       const y = centerY + radius * Math.sin(angleInRadians) - 20;
       angle += 30
-      this.widgets.wfNumbers[`_${i}`] = hmUI.createWidget(hmUI.widget.TEXT, {
+      this.widgets.wfNumbers[`_${i}`] = createWidget(widget.TEXT, {
         x: Math.round(x),
         y: Math.round(y),
-        w: 40,
-        h: 40,
+        w: 50,
+        h: 50,
         color: 0xFFFFFF,
-        text_size: 30,
-        align_h: hmUI.align.CENTER_H,
-        align_v: hmUI.align.CENTER_V,
-        text_style: hmUI.text_style.NONE,
+        text_size: 40,
+        font: 'fonts/Mechagrunge.ttf',
+        align_h: align.CENTER_H,
+        align_v: align.CENTER_V,
         text: numbers[i]
       });
     }
   },
 
   initArrows(){
-    this.destroyArrow = hmUI.createWidget(hmUI.widget.IMG,{
+    this.destroyArrow = createWidget(widget.IMG,{
       x: 0,
       y: 0,
       h: 480,
@@ -127,16 +105,33 @@ Page({
       angle: EventsManager.convertTimeToAngle(new Date() - HOUR_MS*2),
       src: 'arrows/minute.png'
     })
-    this.hourArrow = hmUI.createWidget(hmUI.widget.TIME_POINTER, {
+    this.hourArrow = createWidget(widget.TIME_POINTER, {
       hour_centerX: 240,
       hour_centerY: 240,
       hour_posX: 2,
       hour_posY: 220,
       hour_path: 'arrows/hour.png',
-      hour_cover_path: '/arrows/center.png',
-      hour_cover_x: 160,
-      hour_cover_y: 160
+    })
+  },
 
+  iniitCentralBackground(){
+    this.circle = createWidget(widget.CIRCLE, {
+      center_x: 240,
+      center_y: 240,
+      radius: 109,
+      color: styleColors.white_smoke,
+    })
+    this.circle = createWidget(widget.CIRCLE, {
+      center_x: 240,
+      center_y: 240,
+      radius: 108,
+      color: styleColors.black,
+    })
+    this.circle = createWidget(widget.CIRCLE, {
+      center_x: 240,
+      center_y: 240,
+      radius: 100,
+      color: styleColors.white_smoke,
     })
   },
 
@@ -144,14 +139,14 @@ Page({
     wfNumbers.updateWatchFaceDigit(new Date().getHours())
     const numbers = wfNumbers.getTimePointDigits()
     for (let i = 0; i < 12; i++){
-      this.widgets.wfNumbers[`_${i}`].setProperty(hmUI.prop.TEXT, numbers[i])
+      this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, numbers[i])
     }
   },
 
   updateWidgets(){
     this.updateWfNumbers()
-    this.destroyArrow.setProperty(hmUI.prop.ANGLE, EventsManager.convertTimeToAngle(new Date() - HOUR_MS * 2))
-    this.digitTime.setProperty(hmUI.prop.TEXT, Event.addZero(this.timeSensor.getHours().toString()) + 
+    this.destroyArrow.setProperty(prop.ANGLE, EventsManager.convertTimeToAngle(new Date() - HOUR_MS * 2))
+    this.digitTime.setProperty(prop.TEXT, Event.addZero(this.timeSensor.getHours().toString()) + 
                               ':' + Event.addZero(this.timeSensor.getMinutes().toString()))
       this.canvas.clear({
         x: 0,
@@ -164,16 +159,16 @@ Page({
 
   initDigitalTime(){
     this.timeSensor = new Time()
-    this.digitTime = hmUI.createWidget(hmUI.widget.TEXT, {
-      x: 160,
-      y: 190,
-      w: 160,
-      h: 60,
+    this.digitTime = createWidget(widget.TEXT, {
+      x: (480-180)/2,
+      y: (480-180)/2,
+      w: 180,
+      h: 180,
       color: 0x0000,
-      text_size: 45,
-      align_h: hmUI.align.CENTER_H,
-      align_v: hmUI.align.CENTER_V,
-      text_style: hmUI.text_style.NONE,
+      text_size: 70,
+      font: 'fonts/Mechagrunge.ttf',
+      align_h: align.CENTER_H,
+      align_v: align.CENTER_V,
       text: Event.addZero(this.timeSensor.getHours().toString()) + ':' + Event.addZero(this.timeSensor.getMinutes().toString())
     })
     const self = this
@@ -183,17 +178,16 @@ Page({
   },
 
   initCanvas(){
-    this.canvas = hmUI.createWidget(hmUI.widget.CANVAS, {
+    this.canvas = createWidget(widget.CANVAS, {
       x: 0,
       y: 0,
       w: 480,
       h: 480,
       alpha: 100 
     })
-    this.canvas.addEventListener(hmUI.event.CLICK_UP, function cb(info) {
+    this.canvas.addEventListener(event.CLICK_UP, function cb(info) {
       for (const event of DayEvents.getListOfCurrentDayEvents()){
         if (EventsManager.isThisEvent(info.x, info.y, event)){
-          console.log('CLICK SECTOR: ' + JSON.stringify(event))
           push({
             url: 'page/event',
             params: JSON.stringify(event),
@@ -203,53 +197,8 @@ Page({
     })
   },
 
-  renderSectorInfo(data, startAngle, endAngle) {
-    hmUI.createWidget(hmUI.widget.TEXT, {
-      w: 240*2,
-      h: 240*2,
-      text: data,
-      color: 0x2E8B57,
-      text_size: 17,
-      start_angle: startAngle,
-      end_angle: endAngle,
-      radius: 240,
-      mode: 0,
-      align_h: hmUI.align.CENTER_H,
-      align_v: hmUI.align.CENTER_V
-    })
-
-    //   hmUI.createWidget(hmUI.widget.TEXT, {
-    //   w: 240*2,
-    //   h: 240*2,
-    //   text: data,
-    //   color: 0x2E8B57,
-    //   text_size: 17,
-    //   start_angle: startAngle,
-    //   end_angle: endAngle,
-    //   radius: 240,
-    //   mode: 0,
-    //   align_h: hmUI.align.CENTER_H,
-    //   align_v: hmUI.align.CENTER_V
-    // })
-
-    // this.canvas.drawText({
-    //   x:0,
-    //   y:0,
-    //   text: data,
-    //   color: 0x2E8B57,
-    //   text_size: 22,
-    //   start_angle: startAngle,
-    //   end_angle: endAngle,
-    //   radius: 180,
-    //   mode: 0,
-    //   align_h: hmUI.align.CENTER_H,
-    //   align_v: hmUI.align.CENTER_V
-    // })
-  },
-
   drawEvent(event){
     const ev = new Event(event)
-    // this.renderSectorInfo(ev.getPeriod(), event.startAngle, event.endAngle)
     this.canvas.drawArc({
       center_x: 240,
       center_y: 240,
@@ -268,19 +217,14 @@ Page({
   },
 
   onInit(params){
-    // this.initBackground()
+    this.initBg()
     this.registerGes()
     this.initWfNumbers()
     this.initArrows()
     this.initCanvas()
-    this.initDigitalTime()
     this.renderEvents(DayEvents.getListOfCurrentDayEvents())
-  },
-
-  build() {
-    
-  },
-
-  onDestroy(){
+    this.iniitCentralBackground()
+    this.initDigitalTime()
   }
+
 })

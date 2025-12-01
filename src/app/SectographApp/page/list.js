@@ -1,155 +1,177 @@
-import { createWidget, widget, prop } from '@zos/ui'
+import { createWidget, widget, prop, align } from '@zos/ui'
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { DayEvents } from '../utils/Globals';
 import { push } from '@zos/router'
-
+import { getText } from '@zos/i18n'
+import { styleColors } from '../utils/Constants';
+import {log} from '@zos/utils'
 
 
 Page({
-  allEvents,
-  scrollList,
-  title,
-  deleteDialog,
+  logger: log.getLogger('list.js'),
 
-  initDeleteDialog(index){
-    const deleteDialog = createModal({
-        content: 'Delete this event?',
-        autoHide: false,
-        show: false,
-        onClick: (keyObj) => {
-            const { type } = keyObj
-            if (type === MODAL_CONFIRM) {
-                DayEvents.deleteEventById(allEvents[index].id)
-                scrollList.setProperty(prop.DELETE_ITEM, { index })
-                deleteDialog.show(false)
-                this.onInit()
-            } else {
-                deleteDialog.show(false)
-            }
-        },
+  initBg(){
+    this.circle = createWidget(widget.CIRCLE, {
+      center_x: 240,
+      center_y: 240,
+      radius: 227,
+      color: styleColors.white_smoke,
     })
-    deleteDialog.show(true) 
+    this.circle = createWidget(widget.CIRCLE, {
+      center_x: 240,
+      center_y: 240,
+      radius: 225,
+      color: styleColors.black,
+    })
+  },
+
+  initTitle(){
+    const titleText = getText('List of events')
+    createWidget(widget.TEXT, {
+      text: titleText,
+      x: 0,
+      y: 50,
+      w: 480,
+      h: 50,
+      text_size: 35,
+      align_h: align.CENTER_H,
+      align_v: align.CENTER_V,
+      color: styleColors.white
+    })
+  },
+
+  addLinkToDeleteAddBtn(arrEv){
+    let result = []
+    for (let i of arrEv){
+      i.del_img = 'delete.png'
+      result.push(i)
+    } 
+    const add = {
+      add_btn: 'add_btn.png', 
+      add_btn_text: 'New event',
+      description: ' ',
+      date_period: ' ',
+      period: ' ',
+      status: ' '
+    }
+    result.push(add)
+    return result
+  },
+
+  ifEmptyListOfEventsLabel(){
+    createWidget(widget.TEXT, {
+      text: getText('Create event'),
+      x: 0,
+      y: 220,
+      w: 480,
+      h: 50,
+      text_size: 35,
+      align_h: align.CENTER_H,
+      align_v: align.CENTER_V,
+      color: styleColors.white
+    })
   },
 
   onInit() {
-
-
-    title = createWidget(widget.TEXT, {
-      text: 'List of events',
-      x: 150,
-      y: 50,
-      w: 300,
-      h: 50,
-      text_size: 35
-    })
-
-    allEvents = DayEvents.getListOfALlEvents()
-    if (allEvents.length == 0) {
-      createWidget(widget.TEXT,{
-        text: 'No events',
-        text_size: 40,
-        x: 150,
-        y: 200,
-        h: 50,
-        w: 480
-      })
-      createWidget(widget.BUTTON, {
-        x: (480 - 300) / 2,
-        y: 300,
-        w: 300,
-        h: 100,
-        radius: 50,
-        normal_color: 0x808080	,
-        press_color: 0xfeb4a8,
-        text: 'New event',
-        text_size: 30,
-        click_func: (button_widget) => {
-          push ({
-            url: 'page/add_new_event/description'
-          })
-        }
-      })
-    }
-    else {
-      for (let i of allEvents){
-        i.del_img = 'delete.png'
-      }
-
-
-      scrollList = createWidget(widget.SCROLL_LIST, {
-        x: 0,
-        y: 120,
-        h: 300,
-        w: 480,
-        item_space: 20,
-        snap_to_center: true,
-        item_enable_horizon_drag: true,
-        item_drag_max_distance: -120,
-        item_config: [
-          {
-            type_id: 1,
-            item_bg_color: 0x808080,
-            item_bg_radius: 10,
-            text_view: [
-              { x: 0, y: 0, w: 480, h: 80, key: 'description', color: 0xffffff, text_size: 40 },
-              { x: 0, y: 120, w: 480, h: 40, key: 'date_period', color: 0xffffff, text_size: 20 },
-              { x: 0, y: 80, w: 480, h: 40, key: 'period', color: 0xffffff, text_size: 20},
-              { x: 0, y: 160, w: 480, h: 40, key: 'status', color: 0xffffff, text_size: 20 },
-            ],
-            text_view_count: 4,
-            image_view: [{ x: 522, y: 78, w: 64, h: 64, key: 'del_img', action: true }],
-            image_view_count: 1,
-            item_height: 200
-          }
-        ],
-        item_config_count: 1,
-        data_array: allEvents,
-        data_count: allEvents.length,
-        item_focus_change_func: (list, index, focus) => {
-          console.log('scrollListFocusChange index=' + index)
-          console.log('scrollListFocusChange focus=' + focus)
-        },
-        item_click_func: (item, index, data_key) => {
-          if (data_key === 'del_img') {
-            this.initDeleteDialog(index)
-          } else {
-            updateConfig()
-          }
-        },
-        data_type_config: [
-          {
-            start: 0,
-            end: 1,
-            type_id: 1
+    this.initBg()
+    this.initTitle();
+    const allEvents = this.addLinkToDeleteAddBtn(DayEvents.getListOfALlEvents())
+    if (allEvents.length == 1) 
+        this.ifEmptyListOfEventsLabel()
+    if (allEvents){
+      const scrollList = createWidget(widget.SCROLL_LIST, {
+          x: (480-380)/2,
+          y: 50,
+          h: 480,
+          w: 380,
+          radius:10,
+          item_space: 20,
+          snap_to_center: true,
+          item_enable_horizon_drag: true,
+          item_drag_max_distance: -120,
+          item_config: [
+            {
+              type_id: 1,
+              item_bg_color: styleColors.dark_gray,
+              item_bg_radius: 10,
+              text_view: [
+                { x: 20, y: 0, w: 340, h: 80, key: 'description', color: 0xffffff, text_size: 35, align_h: align.CENTER_H },
+                { x: 20, y: 60, w: 380/2, h: 40, key: 'date_period', color: 0xffffff, text_size: 30, align_h: align.LEFT},
+                { x: 380/2, y: 60, w: 380/2, h: 40, key: 'period', color: 0xffffff, text_size: 30, align_h: align.LEFT},
+                { x: 0, y: 100, w: 380, h: 40, key: 'status', color: 0xffffff, text_size: 30, align_h: align.CENTER_H},
+              ],
+              text_view_count: 4,
+              image_view: [{ x:410, y: 65, w: 64, h: 64, key: 'del_img', action: true }],
+              image_view_count: 1,
+              item_height: 150
+            },
+            {
+              type_id: 2,
+              item_bg_color: styleColors.brown,
+              item_bg_radius: 75,
+              image_view: [{ x: (380-80)/2, y: 0, w: 80, h: 80, key: 'add_btn', action: true }],
+              image_view_count: 1,
+              item_height: 0
+            },
+          ],
+          item_config_count: 2,
+          data_array: allEvents,
+          data_count: allEvents.length,
+          item_focus_change_func: (list, index, focus) => {
           },
-          {
-            start: 1,
-            end: 2,
-            type_id: 2
-          }
-        ],
-      })
-
-
-      function updateConfig() {
-        scrollList.setProperty(prop.UPDATE_DATA, {
+          item_click_func: (item, index, data_key) => {
+            if (data_key === 'del_img') {
+                  const deleteDialog = createModal({
+                    content: 'Delete this event?',
+                    autoHide: false,
+                    show: false,
+                    onClick: (keyObj) => {
+                        const { type } = keyObj
+                        if (type === MODAL_CONFIRM) {
+                            DayEvents.deleteEventById(allEvents[index].id)
+                            scrollList.setProperty(prop.DELETE_ITEM, { index })
+                            deleteDialog.show(false)
+                            // this.onInit()
+                        } else {
+                            deleteDialog.show(false)
+                        }
+                    },
+                  })
+                  deleteDialog.show(true) 
+            } else if (data_key === 'add_btn'){
+                const newEventDialog = createModal({
+                    content: 'Create new event?',
+                    autoHide: false,
+                    show: false,
+                    onClick: (keyObj) => {
+                        const { type } = keyObj
+                        if (type === MODAL_CONFIRM) {
+                          push ({
+                            url: 'page/event/description'
+                          })
+                          this.onInit()
+                        } else {
+                            newEventDialog.show(false)
+                        }
+                    },
+                  })
+                  newEventDialog.show(true) 
+            }
+          },
           data_type_config: [
             {
               start: 0,
-              end: allEvents.length - 1,
+              end: allEvents.length-2,
               type_id: 1
+            },
+            {
+              start: allEvents.length-1,
+              end: allEvents.length-1,
+              type_id: 2
             }
           ],
-          data_type_config_count: 1,
-          data_array: allEvents,
-          data_count: allEvents.length,
-          on_page: 1
-        })
-      }
-
+          data_type_config_count: 2
+      })
     }
-
-
-    
   }
 })

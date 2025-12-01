@@ -54,8 +54,6 @@ Page({
                 let result = ''
                 if (params && params !== 'undefined' && typeof params === 'string' && params.trim().length > 0 
                 && JSON.parse(params).id) {
-                    
-                    console.log('PARAMS START : ' + params + '!!!!')
                     result = JSON.parse(params)
                     result.start = startDate
                     DayEvents.editStartDate(result)
@@ -68,7 +66,7 @@ Page({
                     const current_event = JSON.parse(params)
                     result = {description: current_event.description, start: startDate}
                      push({
-                        url: 'page/add_new_event/end_date',
+                        url: 'page/event/end_date',
                         params: result,
                     })
                 }

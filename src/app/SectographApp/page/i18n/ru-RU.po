@@ -12,3 +12,24 @@ msgstr "назад"
 
 msgid "Left"
 msgstr "Осталось"
+
+msgid "List of events"
+msgstr "Список событий"
+
+msgid "Create event"
+msgstr "Создать событие"
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "About"
+msgstr "О программе"
+
+msgid "New event"
+msgstr "Новое событие"
+
+msgid "Back"
+msgstr "Назад"
+
+msgid "Support the project"
+msgstr "Поддержать проект"

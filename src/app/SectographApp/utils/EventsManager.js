@@ -43,7 +43,6 @@ export class EventsManager {
       if (file && file.trim()){
         let tmp = JSON.parse(file)
         for (const ev of tmp){
-          console.log('EVENT ', JSON.stringify(new Event(ev)))
           result.push(new Event(ev))
         }
       }
@@ -64,13 +63,11 @@ export class EventsManager {
             this.listOfCurrentDayEvents.push(updatedEvent)
           }
         }
-        console.log('GET LIST OF EVENTS: '+ JSON.stringify(this.listOfCurrentDayEvents))
       }
       else this.logger.log('0 events loaded')
     }
 
     addEvent(event){
-      console.log('ADD EVENT: ' + JSON.stringify(event))
       const loaded_events = EventsManager.readEvents()
       let result = []
       if (loaded_events && loaded_events.trim()){
@@ -129,7 +126,6 @@ export class EventsManager {
       if (loadedEvents && loadedEvents.trim()){
         const events = JSON.parse(loadedEvents)
         for (const e of events){
-          console.log('ID ' + event.id)
           if (e.id == event.id) {
             e.description = event.description
           }
@@ -147,7 +143,6 @@ export class EventsManager {
         const events = JSON.parse(loadedEvents)
         for (const e of events){
           if (e.id != id) {
-            console.log('DEl ' + JSON.stringify(e))
             result.push(e)
           }
         }
@@ -159,10 +154,6 @@ export class EventsManager {
     getListOfCurrentDayEvents(){
       this.listOfCurrentDayEvents.splice(0, this.listOfCurrentDayEvents.length) 
       this.uploadActualEvents()
-      console.log(this.listOfCurrentDayEvents)
-      this.listOfCurrentDayEvents.forEach(function(e){
-        console.log('LIST: ' + JSON.stringify(e))
-      })
       return this.listOfCurrentDayEvents
     }
 
@@ -225,6 +216,13 @@ export class EventsManager {
       // normalization
       return result >= 360 ? result % 360 : result
     }
+    
+    static convertToCirCoord(coordinate) {
+      let result = 0
+      if (coordinate >= 240) result = coordinate - 240
+      else result = 240 - coordinate
+      return result
+    }
 
     static isThisEvent(x, y, event) {
       const distance = Math.sqrt((x - 240) ** 2 + (y - 240) ** 2);
@@ -233,10 +231,8 @@ export class EventsManager {
       }
       let pointAngle = 90 - Math.atan2(240 - y, x - 240) * (180 / Math.PI);
       if (pointAngle < 0) pointAngle = 360 + pointAngle
-      console.log('EVENT IS THIS '+ JSON.stringify(event) + ' ' + pointAngle)
-
       if (event.startAngle <= event.endAngle) {
-        // if (event.startAngle < 0 ) pointAngle = pointAngle - 360 ????
+        if (event.startAngle < 0 ) pointAngle = pointAngle - 360 // ? if 12 to 13
 
         return pointAngle >= event.startAngle && pointAngle <= event.endAngle;
       } else {

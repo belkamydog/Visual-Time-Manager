@@ -28,10 +28,12 @@
             "page/index",
             "page/event",
             "page/list",
-            "page/add_new_event/color",
-            "page/add_new_event/start_date",
-            "page/add_new_event/end_date",
-            "page/add_new_event/description"
+            "page/menu",
+            "page/about",
+            "page/event/color",
+            "page/event/start_date",
+            "page/event/end_date",
+            "page/event/description"
           ]
         },
         "app-side": {

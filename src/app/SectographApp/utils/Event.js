@@ -74,7 +74,7 @@ export class Event {
 
     getDatePeriod(){ return this.date_period }
 
-    getlevel(){ return this.getlevel }
+    getlevel(){ return this.level }
 
     getColor(){ return this.color }
 

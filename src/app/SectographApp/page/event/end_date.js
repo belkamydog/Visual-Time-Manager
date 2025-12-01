@@ -59,8 +59,6 @@ Page({
                 let result = ''
                 if (params && params !== 'undefined' && typeof params === 'string' && params.trim().length > 0 
                     && JSON.parse(params).id) {
-                    
-                    console.log('PARAMS END : ' + params + '!!!!')
                     result = JSON.parse(params)
                     result.end = endDate
                     DayEvents.editEndDate(result)
@@ -72,9 +70,8 @@ Page({
                 else {
                     const current_event = JSON.parse(params)
                     result = {description: current_event.description, start: current_event.start, end: endDate.toISOString()}
-                    // DayEvents.addEvent(result)
                      push({
-                        url: 'page/add_new_event/color',
+                        url: 'page/event/color',
                         params: JSON.stringify(result)
                     })
                 }

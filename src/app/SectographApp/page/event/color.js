@@ -39,27 +39,13 @@ Page({
                     text: '',
                     click_func: (color_i) => {
                             let result = ''
-                        // if (params && params !== 'undefined' && typeof params === 'string' && params.trim().length > 0 
-                        //     && JSON.parse(params).id) {
-                            
-                        //     result = JSON.parse(params)
-                        //     result.end = endDate
-                        //     DayEvents.editEndDate(result)
-                        //     push({
-                        //         url: 'page/event',
-                        //         params: JSON.stringify(result),
-                        //     })
-                        // }
-                        // else {
                             const current_event = JSON.parse(params)
-                            console.log('PARAMS IN COLOR ' + params)
                             result = {description: current_event.description, start: current_event.start, end: current_event.end, color: currentColor}
                             DayEvents.addEvent(result)
                             push({
                                 url: 'page/index',
                                 params: 'clear'
                             })
-                        // }
                     }
                 })
             }

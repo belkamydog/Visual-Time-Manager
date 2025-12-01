@@ -9,7 +9,6 @@ export class WatchFace {
         let currentHourIndex = 0
         if (hours < 12) currentHourIndex = hours
         else currentHourIndex = hours-12
-        // this.timePointDigits[(((currentHourIndex-2) % 12) + 12) % 12] =  hours-2 >= 0 ? hours-2 : 24+(hours-2)
         this.timePointDigits[(((currentHourIndex-1) % 12) + 12) % 12] =  hours-1 >= 0 ? hours-1 : 24+(hours-1)
         for (let i = 0 ; i < 11; i++){
             this.timePointDigits[(currentHourIndex + i) % 12] = hours
