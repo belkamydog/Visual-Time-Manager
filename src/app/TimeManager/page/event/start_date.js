@@ -16,8 +16,8 @@ Page({
             minute: time.getMinutes()
         }
         let dataArrays = {
-            month: new Array(12).fill(0).map((d, index) => index + 1), 
             day: new Array(31).fill(0).map((d, index) => index + 1),
+            month: new Array(12).fill(0).map((d, index) => index + 1),
             year: new Array(3).fill(0).map((d, index) => index + new Date().getFullYear()),
             hour: new Array(24).fill(0).map((d, index) => index),
             minute: new Array(60).fill(0).map((d, index) => index)
@@ -31,10 +31,10 @@ Page({
             if (event_type === 1) {
                 switch(column_index) {
                     case 0:
-                        currentValues.month = dataArrays.month[select_index]
+                        currentValues.day = dataArrays.day[select_index]
                         break
                     case 1:
-                        currentValues.day = dataArrays.day[select_index]
+                        currentValues.month = dataArrays.month[select_index]
                         break
                     case 2:
                         currentValues.year = dataArrays.year[select_index]
@@ -83,9 +83,9 @@ Page({
             init_col_index: 1,
             data_config: [
                 {
-                    data_array: dataArrays.month,
-                    init_val_index: time.getMonth() - 1,
-                    unit: 'M',
+                    data_array: dataArrays.day,
+                    init_val_index: time.getDate() - 1,
+                    unit: 'D',
                     support_loop: true,
                     font_size: font_size,
                     select_font_size: select_font_size,
@@ -94,9 +94,9 @@ Page({
                     col_width: col_width
                 },
                 {
-                    data_array: dataArrays.day,
-                    init_val_index: time.getDate() - 1,
-                    unit: 'D',
+                    data_array: dataArrays.month,
+                    init_val_index: time.getMonth() - 1,
+                    unit: 'M',
                     support_loop: true,
                     font_size: font_size,
                     select_font_size: select_font_size,
