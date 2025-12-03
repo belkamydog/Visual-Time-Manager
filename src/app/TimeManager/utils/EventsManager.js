@@ -1,39 +1,96 @@
 import { log } from "@zos/utils"
-import { HOUR_MS, COLORS } from "./Constants"
+import { HOUR_MS } from "./Constants"
 import { readFileSync, writeFileSync } from '@zos/fs'
 import { Event } from '../utils/Event'
 
-/**
- * The class responsible for load, preparing and receiving information for rendering
-*/
+
 export class EventsManager {
     logger = log.getLogger('EventManager.js')
     listOfCurrentDayEvents = []
-    static color_index = 0
+    autoDelete //0-never 1-day, 2-week, 3-month,
 
     constructor(){
-      // writeFileSync({
-      //   path: 'events',
-      //   data: '',
-      //   options: {
-      //       encoding: 'utf8',
-      //   }
-      // })
-      // this.uploadActualEvents()
+      this.autoDelete = 0
+      this.initSettings()
     }
 
-    /**Filter all loaded events [2h - now +10h] */
+    initSettings(){
+      const settings = this.readSettings()
+      if (settings && settings.trim()) {
+        this.autoDelete = JSON.parse(settings).clear_history
+      }
+      else {
+        const new_set = {clear_history: 0}
+        this.saveSettings(new_set)
+      }
+    }
+
+    getAutoDelete(){
+      return this.autoDelete
+    }
+
+    setAutoDelete(value){
+      this.autoDelete = value
+      const set = this.readSettings()
+      if (set && set.trim()){
+        let updatedSettings = JSON.parse(set)
+        updatedSettings.clear_history = value
+        this.saveSettings(updatedSettings)
+      }
+      this.uploadActualEvents()
+    }
+
+    deleteFilter(event){
+      let result = false
+      const now = new Date()
+      const end = new Date(event.end)
+      if (this.autoDelete == 1){
+        if (now > end && (now.getTime() - end.getTime()) > HOUR_MS * 24){
+          result = true
+        }
+      }
+      else if (this.autoDelete == 2){
+        if (now > end && (now.getTime() - end.getTime()) > HOUR_MS * 24 * 7){
+          result = true
+        }
+      }
+      else if (this.autoDelete == 3){
+        if (now > end && (now.getTime() - end.getTime()) > HOUR_MS * 24 * 31){
+          result = true
+        }
+      }
+      return result
+    }
+
+    clearAllHistory(){
+      writeFileSync({
+        path: 'events',
+        data: '',
+        options: {
+            encoding: 'utf8',
+        }
+      })
+    }
+
     eventsFilter(event){
+      console.log(JSON.stringify(event))
       let result = false
       let now = new Date()
       let startEv = new Date(event.start)
       let endEv = new Date(event.end)
-      if ((startEv.getTime() - now.getTime()) <= (10 * HOUR_MS) && startEv >= now)
+      if ((startEv.getTime() - now.getTime()) <= (10 * HOUR_MS) && startEv >= now){
         result = true
-      else if ((now.getTime() - endEv.getTime()) <= 2 * HOUR_MS && now >= endEv)
+        console.log(result+ '1')
+      }
+      else if ((now.getTime() - endEv.getTime()) <= 2 * HOUR_MS && now >= endEv){
         result = true
-      else if (now >= startEv && now <= endEv) result = true
+        console.log(result+ '2')
 
+      }
+      else if (now >= startEv && now <= endEv){
+        result = true
+        console.log(result+ '3')
+      }
       return result 
     }
 
@@ -52,17 +109,23 @@ export class EventsManager {
       return result
     }
 
-    /**Upload events from file /data/events  with filtration*/
     uploadActualEvents(){
       const file = EventsManager.readEvents()
+      let afterDeleteFilterArr = []
       if (file && file.trim()){
         const loadedEvents = JSON.parse(file)
         for (const ev of loadedEvents){
-          if (this.eventsFilter(ev)){
-            const updatedEvent = EventsManager.addColorAnglesToEvent(ev)
-            this.listOfCurrentDayEvents.push(updatedEvent)
+          if (!this.deleteFilter(ev)){
+            afterDeleteFilterArr.push(ev)
+            if (this.eventsFilter(ev)){
+              console.log('after delete filter')
+              const updatedEvent = EventsManager.addColorAnglesToEvent(ev)
+              this.listOfCurrentDayEvents.push(updatedEvent)
+            }
           }
+          else console.log('DELETE '+ JSON.stringify(ev))
         }
+        EventsManager.writeEvents(afterDeleteFilterArr)
       }
       else this.logger.log('0 events loaded')
     }
@@ -170,6 +233,25 @@ export class EventsManager {
       writeFileSync({
         path: 'events',
         data: JSON.stringify(events),
+        options: {
+            encoding: 'utf8',
+        }
+      })
+    }
+
+    readSettings(){
+      return readFileSync({
+          path: 'settings',
+          options: {
+            encoding: 'utf8',
+          }
+        })
+    }
+
+    saveSettings(settings){
+      writeFileSync({
+        path: 'settings',
+        data: JSON.stringify(settings),
         options: {
             encoding: 'utf8',
         }

@@ -2,8 +2,7 @@ import { createWidget, widget } from '@zos/ui'
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { push } from '@zos/router'
 import { getText } from '@zos/i18n'
-import { styleColors } from '../utils/Constants'
-
+import { styleColors } from '../../utils/Constants'
 
 Page({
 
@@ -22,16 +21,16 @@ Page({
         })
     },
     
-    initNewEventDialog(){
+    initClearHistoryDialog(){
         const dialog = createModal({
-            content: getText('Create event') + '?',
+            content: getText('Clear history') + '?',
             autoHide: false,
             show: false,
             onClick: (keyObj) => {
                 const { type } = keyObj
                 if (type === MODAL_CONFIRM) {
                 push({
-                    url: 'page/event/description',
+                    url: 'page/settings/menu',
                 })
                     dialog.show(false)
                 } else {
@@ -45,14 +44,12 @@ Page({
     onInit(){
         this.initBg()
         const menu = [
-            {src:'', text: getText('New event')},
-            {src:'', text: getText('List of events')},
-            {src:'', text: getText('Settings')},
-            {src:'', text: getText('About')},
+            {src:'', text: getText('Auto delete')},
+            {src:'', text: getText('Clear history')}
         ]
         cycleList = createWidget(widget.CYCLE_IMAGE_TEXT_LIST, {
             x: (480-330)/2,
-            y: (480-300)/2,
+            y: 120,
             w: 330,
             h: 300,
             data_array: menu,
@@ -65,19 +62,11 @@ Page({
             item_text_size: 40,
             item_click_func: (cyckleList ,index) => {
                 if (index == 0){
-                    this.initNewEventDialog()
+                    push({
+                        url: 'page/settings/history',
+                    })
                 } else if (index == 1){
-                    push({
-                        url: 'page/list',
-                    })
-                } else if (index == 2) {
-                    push({
-                        url: 'page/settings/menu',
-                    })
-                } else if (index == 3) {
-                    push({
-                        url: 'page/about',
-                    })
+                    this.initClearHistoryDialog()
                 }
 
             },

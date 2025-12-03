@@ -10,15 +10,15 @@ Page({
         const time = new Time()
         let currentValues = {
             day: time.getDate(),
-            month: time.getMonth()-1,
+            month: time.getMonth(),
             year: time.getFullYear(),
             hour: time.getHours(),
             minute: time.getMinutes()
         }
         let dataArrays = {
-            month: new Array(12).fill(0).map((d, index) => index+1), 
+            month: new Array(12).fill(0).map((d, index) => index + 1), 
             day: new Array(31).fill(0).map((d, index) => index + 1),
-            year: new Array(100).fill(0).map((d, index) => index + 1970),
+            year: new Array(3).fill(0).map((d, index) => index + new Date().getFullYear()),
             hour: new Array(24).fill(0).map((d, index) => index),
             minute: new Array(60).fill(0).map((d, index) => index)
         }
@@ -49,13 +49,12 @@ Page({
             } if (event_type == 2) {
                 let startDate = new Date()
                 startDate.setFullYear(currentValues.year)
-                startDate.setMonth(currentValues.month)
+                startDate.setMonth(currentValues.month-1)
                 startDate.setDate(currentValues.day)
                 startDate.setHours(currentValues.hour)
                 startDate.setMinutes(currentValues.minute)
                 let result = ''
-                if (params && params !== 'undefined' && typeof params === 'string' && params.trim().length > 0 
-                && JSON.parse(params).id) {
+                if (params && JSON.parse(params).id) {
                     result = JSON.parse(params)
                     result.start = startDate
                     DayEvents.editStartDate(result)
@@ -67,6 +66,7 @@ Page({
                 else {
                     const current_event = JSON.parse(params)
                     result = {description: current_event.description, start: startDate}
+                    console.log('RESULT '+JSON.stringify(result))
                      push({
                         url: 'page/event/end_date',
                         params: result,

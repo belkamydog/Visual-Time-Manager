@@ -10,7 +10,7 @@ Page({
         const time = new Time()
         let currentValues = {
             day: time.getDate(),
-            month: time.getMonth()-1,
+            month: time.getMonth(),
             year: time.getFullYear(),
             hour: time.getHours(),
             minute: time.getMinutes()
@@ -19,7 +19,7 @@ Page({
         let dataArrays = {
             month: new Array(12).fill(0).map((d, index) => index + 1), 
             day: new Array(31).fill(0).map((d, index) => index + 1),
-            year: new Array(100).fill(0).map((d, index) => index + 1970),
+            year: new Array(3).fill(0).map((d, index) => index +  new Date().getFullYear()),
             hour: new Array(24).fill(0).map((d, index) => index),
             minute: new Array(60).fill(0).map((d, index) => index)
         }
@@ -53,7 +53,7 @@ Page({
             if (event_type == 2){
                 let endDate = new Date()
                 endDate.setFullYear(currentValues.year)
-                endDate.setMonth(currentValues.month)
+                endDate.setMonth(currentValues.month-1)
                 endDate.setDate(currentValues.day)
                 endDate.setHours(currentValues.hour)
                 endDate.setMinutes(currentValues.minute)
@@ -72,6 +72,7 @@ Page({
                 else {
                     const current_event = JSON.parse(params)
                     result = {description: current_event.description, start: current_event.start, end: endDate.toISOString()}
+                    console.log('END: ' + JSON.stringify(result))
                      push({
                         url: 'page/event/color',
                         params: JSON.stringify(result)

@@ -30,6 +30,8 @@
             "page/list",
             "page/menu",
             "page/about",
+            "page/settings/history",
+            "page/settings/menu",
             "page/event/color",
             "page/event/start_date",
             "page/event/end_date",
