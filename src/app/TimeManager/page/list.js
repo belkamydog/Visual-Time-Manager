@@ -54,11 +54,12 @@ Page({
     })
   },
 
-  addLinkToDeleteAddBtnAndWeekDay(arrEv){
+  addKeyToDeleteAddEditBtnAndWeekDay(arrEv){
     let result = []
     for (let i of arrEv){
       i.weekDay = new Event(i).getWeekDay()
       i.del_img = 'delete.png'
+      i.edit_img = 'edit.png'
       result.push(i)
     } 
     let addEvent = {}
@@ -85,7 +86,7 @@ Page({
   onInit() {
     this.initBg()
     this.initTitle();
-    const weekEvents = this.addLinkToDeleteAddBtnAndWeekDay(DayEvents.getListOfEventsBeforeDate(new Date()))
+    const weekEvents = this.addKeyToDeleteAddEditBtnAndWeekDay(DayEvents.getListOfEventsBeforeDate(new Date()))
     logger.log('Init list of events: ' + JSON.stringify(weekEvents))
     if (weekEvents.length == 1) 
         this.ifEmptyListOfEventsLabel()
@@ -114,8 +115,11 @@ Page({
               { x: 0, y: 200, w: 380, h: 40, key: 'status', color: 0xffffff, text_size: 30, align_h: align.CENTER_H},
             ],
             text_view_count: 5,
-            image_view: [{ x:410, y: 100, w: 64, h: 64, key: 'del_img', action: true }],
-            image_view_count: 1,
+            image_view: [
+              { x:410, y: 20, w: 64, h: 64, key: 'del_img', action: true },
+              { x:410, y: 150, w: 64, h: 64, key: 'edit_img', action: true }
+            ],
+            image_view_count: 2,
             item_height: 250
           },
           {
@@ -141,11 +145,12 @@ Page({
                   onClick: (keyObj) => {
                       const { type } = keyObj
                       if (type === MODAL_CONFIRM) {
-                          DayEvents.deleteEventById(weekEvents[index].id)
-                          scrollList.setProperty(prop.DELETE_ITEM, { index })
-                          deleteDialog.show(false)
-                          // this.onInit()
+                        DayEvents.deleteEventById(weekEvents[index].id)
+                        scrollList.setProperty(prop.DELETE_ITEM, { index })
+                        logger.log('Delete event: ' + JSON.stringify(weekEvents[index]))
+                        deleteDialog.show(false)
                       } else {
+                          logger.log('Delete canceled')
                           deleteDialog.show(false)
                       }
                   },
@@ -160,16 +165,24 @@ Page({
                   onClick: (keyObj) => {
                       const { type } = keyObj
                       if (type === MODAL_CONFIRM) {
+                        logger.log('Create new event init')
                         push ({
                           url: 'page/event/create/description'
                         })
                         this.onInit()
                       } else {
+                        logger.log('Create new event canceled')
                           newEventDialog.show(false)
                       }
                   },
                 })
                 newEventDialog.show(true) 
+          }
+          else if (data_key == 'edit_img'){
+            logger.log('Calling edit menu...')
+            push({
+              url: 'page/event/edit/menu'
+            })
           }
         },
         data_type_config: [
