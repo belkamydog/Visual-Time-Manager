@@ -30,13 +30,19 @@
             "page/list",
             "page/menu",
             "page/about",
-            "page/settings/history",
             "page/settings/menu",
-            "page/event/color",
-            "page/event/start_date",
-            "page/event/end_date",
-            "page/event/repeat",
-            "page/event/description"
+            "page/settings/history",
+            "page/event/create/description",
+            "page/event/create/start_date",
+            "page/event/create/end_date",
+            "page/event/create/color",
+            "page/event/create/repeat",
+            "page/event/edit/menu",
+            "page/event/edit/description",
+            "page/event/edit/start_date",
+            "page/event/edit/end_date",
+            "page/event/edit/color",
+            "page/event/edit/repeat"
           ]
         },
         "app-side": {

@@ -1,9 +1,11 @@
 import { createWidget, widget } from '@zos/ui'
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { push } from '@zos/router'
+import {log} from '@zos/utils'
 import { getText } from '@zos/i18n'
 import { styleColors } from '../utils/Constants'
 
+const logger = log.getLogger('Main menu')
 
 Page({
 
@@ -30,11 +32,13 @@ Page({
             onClick: (keyObj) => {
                 const { type } = keyObj
                 if (type === MODAL_CONFIRM) {
-                push({
-                    url: 'page/event/description',
-                })
+                    logger.log('Create new event init')
+                    push({
+                        url: 'page/event/create/description',
+                    })
                     dialog.show(false)
                 } else {
+                    logger.log('Create new event canceled')
                     dialog.show(false)
                 }
             },
@@ -67,14 +71,17 @@ Page({
                 if (index == 0){
                     this.initNewEventDialog()
                 } else if (index == 1){
+                    logger.log('Push to the list of events page')
                     push({
                         url: 'page/list',
                     })
                 } else if (index == 2) {
+                    logger.log('Push to the settings page')
                     push({
                         url: 'page/settings/menu',
                     })
                 } else if (index == 3) {
+                    logger.log('Push to the about page')
                     push({
                         url: 'page/about',
                     })

@@ -1,16 +1,33 @@
 import { createWidget, widget, prop, align } from '@zos/ui'
+import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { getText } from '@zos/i18n'
-import { styleColors } from '../../utils/Constants';
-import { DayEvents } from '../../utils/Globals';
+import { styleColors } from '../../../utils/Constants';
+import { DayEvents } from '../../../utils/Globals';
 import { push } from '@zos/router'
-
+import {log} from '@zos/utils'
 
 let repeat_page_index = 0
+const logger = log.getLogger('page/event/edit/repeat.js')
 
 Page({
     repeat: ['Never','Every day', 'Every week', 'Every month'],
 
+    registerGes(){
+        onGesture({
+            callback: (event) => {
+            if (event === GESTURE_RIGHT) {
+                logger.log('Repeat peacker canceled push to edit menu')
+                push({
+                    url: 'page/event/edit/menu',
+                })
+            }
+            return true
+            },
+        })
+    },
+
     onInit(params){
+        logger.log('Init edit repeat page with params: ' + params)
         createWidget(widget.TEXT, {
             text: getText('Repeat event:'),
             w: 300,
@@ -108,7 +125,6 @@ Page({
 
         radioGroup.setProperty(prop.INIT, neverRepeatBtn)
 
-        let result = ''
         createWidget(widget.BUTTON, {
             x: 40,
             y: 550,
@@ -120,20 +136,13 @@ Page({
             text: getText('Create'),
             text_size: 32,
             click_func: () => {
-                result = JSON.parse(params)
+                let result = JSON.parse(params)
                 result.repeat = repeat_page_index
-                if (result.id){
-                    // DayEvents.editEvent(result.id)
-                    push({
-                        url: 'page/event'
-                    })
-                } else {
-                    DayEvents.addEvent(result)
-                    push({
-                        url: 'page/index',
-                        params: 'clear'
-                    })
-                }
+                logger.log('Edit repeate done new repeat: ' + result.repeat)
+                DayEvents.editEvent(result)
+                push({
+                    url: 'page/event'
+                })
             }
         })
         createWidget(widget.BUTTON, {
@@ -147,6 +156,7 @@ Page({
             text: getText('Main screen'),
             text_size: 32,
             click_func: () => {
+                logger.log('Push to the main page')
                 push ({
                     url: 'page/index'
                 })

@@ -21,7 +21,6 @@ export const COLORS = [
   0x7CFC00,
   0xBA55D3
 ]
-
 export const styleColors = {
     // Basic colors
   black: 0x000000,
@@ -168,4 +167,21 @@ export const styleColors = {
   honeydew: 0xF0FFF0,
   floral_white: 0xFFFAF0,
   ivory: 0xFFFFF0
+}
+export const WEEK_DAYS = [
+  'Sunday' ,
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+]
+
+export const DATE_TIME_PEACKER = {
+    font_size: 30,
+    select_font_size: 30,
+    connector_font_size: 1,
+    unit_font_size: 5,
+    col_width: 45,
 }

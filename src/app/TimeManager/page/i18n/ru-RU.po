@@ -111,3 +111,7 @@ msgstr "Суббота"
 msgid "Sunday"
 msgstr "Воскресенье"
 
+
+msgid "Edit"
+msgstr "Изменить"
+

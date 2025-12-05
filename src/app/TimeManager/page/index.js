@@ -3,7 +3,7 @@ import {log} from '@zos/utils'
 import { push } from '@zos/router'
 import { Time } from '@zos/sensor'
 import { DayEvents, wfNumbers} from '../utils/Globals';
-import { onGesture, GESTURE_LEFT, GESTURE_RIGHT } from '@zos/interaction'
+import { onGesture, GESTURE_LEFT } from '@zos/interaction'
 import { HOUR_MS } from '../utils/Constants';
 import { EventsManager } from '../utils/EventsManager';
 import { Event } from '../utils/Event';

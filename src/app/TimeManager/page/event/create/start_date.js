@@ -1,20 +1,23 @@
 import { push } from '@zos/router'
 import { Time } from '@zos/sensor'
 import { widget, createWidget } from '@zos/ui'
-import { DayEvents } from '../../utils/Globals'
 import { getText } from '@zos/i18n'
+import {log} from '@zos/utils'
 
+
+const logger = log.getLogger('start.js')
 
 Page({
     onInit(params) {
+        logger.log('Start date page init with params: ' + params)
         const time = new Time()
         let currentValues = {
-            day: time.getDate(),
-            month: time.getMonth(),
-            year: time.getFullYear(),
-            hour: time.getHours(),
-            minute: time.getMinutes()
-        }
+                day: time.getDate(),
+                month: time.getMonth(),
+                year: time.getFullYear(),
+                hour: time.getHours(),
+                minute: time.getMinutes()
+            }
         let dataArrays = {
             day: new Array(31).fill(0).map((d, index) => index + 1),
             month: new Array(12).fill(0).map((d, index) => index + 1),
@@ -53,24 +56,13 @@ Page({
                 startDate.setDate(currentValues.day)
                 startDate.setHours(currentValues.hour)
                 startDate.setMinutes(currentValues.minute)
-                let result = ''
-                if (params && JSON.parse(params).id) {
-                    result = JSON.parse(params)
-                    result.start = startDate
-                    DayEvents.editStartDate(result)
-                    push({
-                        url: 'page/event',
-                        params: JSON.stringify(result),
-                    })
-                }
-                else {
-                    const current_event = JSON.parse(params)
-                    result = {description: current_event.description, start: startDate}
-                     push({
-                        url: 'page/event/end_date',
-                        params: result,
-                    })
-                }
+                const current_event = JSON.parse(params)
+                current_event.start = startDate
+                logger.log('Add start to event: ' + JSON.stringify(current_event))
+                push({
+                    url: 'page/event/create/end_date',
+                    params: JSON.stringify(current_event),
+                })
             }
         }
 

@@ -1,12 +1,15 @@
 import { push } from '@zos/router'
 import { Time } from '@zos/sensor'
 import { widget, createWidget } from '@zos/ui'
-import { DayEvents } from '../../utils/Globals'
 import { getText } from '@zos/i18n'
+import {log} from '@zos/utils'
+import { DATE_TIME_PEACKER } from '../../../utils/Constants'
 
+const logger = log.getLogger('end_date.js')
 
 Page({
     onInit(params) {
+        logger.log('End date page init with params: ' + params)
         const time = new Time()
         let currentValues = {
             day: time.getDate(),
@@ -15,7 +18,6 @@ Page({
             hour: time.getHours(),
             minute: time.getMinutes()
         }
-        
         let dataArrays = {
             day: new Array(31).fill(0).map((d, index) => index + 1),
             month: new Array(12).fill(0).map((d, index) => index + 1), 
@@ -23,13 +25,6 @@ Page({
             hour: new Array(24).fill(0).map((d, index) => index),
             minute: new Array(60).fill(0).map((d, index) => index)
         }
-        
-        const font_size = 30
-        const select_font_size = 30
-        const connector_font_size = 1
-        const unit_font_size = 5
-        const col_width = 45
-        
         const picker_cb = (picker, event_type, column_index, select_index) => {
             if (event_type === 1) {
                 switch(column_index) {
@@ -58,28 +53,15 @@ Page({
                 endDate.setHours(currentValues.hour)
                 endDate.setMinutes(currentValues.minute)
 
-                let result = ''
-                if (params && params !== 'undefined' && typeof params === 'string' && params.trim().length > 0 
-                    && JSON.parse(params).id) {
-                    result = JSON.parse(params)
-                    result.end = endDate
-                    DayEvents.editEndDate(result)
-                    push({
-                        url: 'page/event',
-                        params: JSON.stringify(result),
-                    })
-                }
-                else {
-                    const current_event = JSON.parse(params)
-                    result = {description: current_event.description, start: current_event.start, end: endDate.toISOString()}
-                     push({
-                        url: 'page/event/color',
-                        params: JSON.stringify(result)
-                    })
-                }
+                const current_event = JSON.parse(params)
+                current_event.end = endDate.toISOString()
+                logger.log('Add end to event: ' + JSON.stringify(current_event))
+                push({
+                    url: 'page/event/create/color',
+                    params: JSON.stringify(current_event)
+                })
             }
         }
-
         const picker_widget = createWidget(widget.WIDGET_PICKER, {
             title: getText('Event end'),
             subtitle: '',
@@ -92,55 +74,55 @@ Page({
                     init_val_index: time.getDate() - 1,
                     unit: 'D',
                     support_loop: true,
-                    font_size: font_size,
-                    select_font_size: select_font_size,
-                    connector_font_size: connector_font_size,
-                    unit_font_size: unit_font_size,
-                    col_width: col_width
+                    font_size: DATE_TIME_PEACKER.font_size,
+                    select_font_size: DATE_TIME_PEACKER.select_font_size,
+                    connector_font_size: DATE_TIME_PEACKER.connector_font_size,
+                    unit_font_size: DATE_TIME_PEACKER.unit_font_size,
+                    col_width: DATE_TIME_PEACKER.col_width
                 },
                 {
                     data_array: dataArrays.month,
                     init_val_index: time.getMonth() - 1,
                     unit: 'M',
                     support_loop: true,
-                    font_size: font_size,
-                    select_font_size: select_font_size,
-                    connector_font_size: connector_font_size,
-                    unit_font_size: unit_font_size,
-                    col_width: col_width
+                    font_size: DATE_TIME_PEACKER.font_size,
+                    select_font_size: DATE_TIME_PEACKER.select_font_size,
+                    connector_font_size: DATE_TIME_PEACKER.connector_font_size,
+                    unit_font_size: DATE_TIME_PEACKER.unit_font_size,
+                    col_width: DATE_TIME_PEACKER.col_width
                 },                
                 {
                     data_array: dataArrays.year,
                     init_val_index: time.getFullYear() - 1970,
                     unit: 'Y',
                     support_loop: true,
-                    font_size: font_size,
-                    select_font_size: select_font_size,
-                    connector_font_size: connector_font_size,
-                    unit_font_size: unit_font_size,
-                    col_width: col_width
+                    font_size: DATE_TIME_PEACKER.font_size,
+                    select_font_size: DATE_TIME_PEACKER.select_font_size,
+                    connector_font_size: DATE_TIME_PEACKER.connector_font_size,
+                    unit_font_size: DATE_TIME_PEACKER.unit_font_size,
+                    col_width: DATE_TIME_PEACKER.col_width
                 },
                 {
                     data_array: dataArrays.hour,
                     init_val_index: time.getHours(),
                     unit: 'H',
                     support_loop: true,
-                    font_size: font_size,
-                    select_font_size: select_font_size,
-                    connector_font_size: connector_font_size,
-                    unit_font_size: unit_font_size,
-                    col_width: col_width
+                    font_size: DATE_TIME_PEACKER.font_size,
+                    select_font_size: DATE_TIME_PEACKER.select_font_size,
+                    connector_font_size: DATE_TIME_PEACKER.connector_font_size,
+                    unit_font_size: DATE_TIME_PEACKER.unit_font_size,
+                    col_width: DATE_TIME_PEACKER.col_width
                 },
                 {
                     data_array: dataArrays.minute,
                     init_val_index: time.getMinutes(),
                     unit: 'M',
                     support_loop: true,
-                    font_size: font_size,
-                    select_font_size: select_font_size,
-                    connector_font_size: connector_font_size,
-                    unit_font_size: unit_font_size,
-                    col_width: col_width
+                    font_size: DATE_TIME_PEACKER.font_size,
+                    select_font_size: DATE_TIME_PEACKER.select_font_size,
+                    connector_font_size: DATE_TIME_PEACKER.connector_font_size,
+                    unit_font_size: DATE_TIME_PEACKER.unit_font_size,
+                    col_width: DATE_TIME_PEACKER.col_width
                 }
             ],
             picker_cb

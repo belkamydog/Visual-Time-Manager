@@ -1,17 +1,18 @@
 import { createWidget, widget, prop } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { COLORS } from '../../utils/Constants'
-import { DayEvents } from '../../utils/Globals';
+import { COLORS } from '../../../utils/Constants'
 import { push } from '@zos/router'
+import {log} from '@zos/utils'
 
-
+const logger = log.getLogger('colors.js')
 
 Page({
     onInit(params){
+        logger.log('Init color peacker page with params: ' + params)
         const title = createWidget(widget.TEXT, {
             x: 140,
             y: 50,
-            text: 'Event color',
+            text: getText('Event color'),
             text_size: 40,
             w: 480,
             h: 50,
@@ -36,12 +37,12 @@ Page({
                     press_color: 0xfeb4a8,
                     text: '',
                     click_func: (color_i) => {
-                            let result = ''
                             const current_event = JSON.parse(params)
-                            result = {description: current_event.description, start: current_event.start, end: current_event.end, color: currentColor}
+                            current_event.color = currentColor
+                            logger.log('Color add to event: color: ' + JSON.stringify(current_event.color))
                             push({
-                                url: 'page/event/repeat',
-                                params: JSON.stringify(result)
+                                url: 'page/event/create/repeat',
+                                params: JSON.stringify(current_event)
                             })
                     }
                 })

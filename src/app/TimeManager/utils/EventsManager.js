@@ -3,11 +3,16 @@ import { HOUR_MS } from "./Constants"
 import { readFileSync, writeFileSync } from '@zos/fs'
 import { Event } from '../utils/Event'
 
+const logger = log.getLogger('Event Manager')
 
 export class EventsManager {
     logger = log.getLogger('EventManager.js')
+
     listOfCurrentDayEvents = []
-    autoDelete //0-never 1-day, 2-week, 3-month,
+    /**
+     * 0-never 1-dayly, 2-weekly, 3-monthly,
+     */
+    autoDelete
 
     constructor(){
       this.autoDelete = 0
@@ -15,19 +20,21 @@ export class EventsManager {
     }
 
     initSettings(){
+      logger.log('init settings')
       const settings = this.readSettings()
-      if (settings && settings.trim()) {
+      if (settings && settings.trim()){
         this.autoDelete = JSON.parse(settings).clear_history
+        logger.log('Loading settings done, autoDelete = '+ this.autoDelete)
       }
       else {
-        const new_set = {clear_history: 0}
+        logger.log('Settings file is empty, creating new settings file..')
+        const new_set = { clear_history: 0 }
         this.saveSettings(new_set)
       }
     }
 
-    getAutoDelete(){
-      return this.autoDelete
-    }
+    getAutoDelete(){ return this.autoDelete }
+
 
     setAutoDelete(value){
       this.autoDelete = value
@@ -35,6 +42,7 @@ export class EventsManager {
       if (set && set.trim()){
         let updatedSettings = JSON.parse(set)
         updatedSettings.clear_history = value
+        logger.log('Settings updated. New auto-delete value: ' +  value)
         this.saveSettings(updatedSettings)
       }
       this.uploadActualEvents()
@@ -87,6 +95,7 @@ export class EventsManager {
           result = true
         }
       }
+      if (result) logger.log( 'Auto-delete = ' + this.autoDelete + ' Delete: ' + event)
       return result
     }
 
@@ -220,48 +229,19 @@ export class EventsManager {
       this.uploadActualEvents()
     }
 
-    editStartDate(event){
-      const loadedEvents = EventsManager.readEvents()
-      let result = []
-      if (loadedEvents && loadedEvents.trim()){
-        const events = JSON.parse(loadedEvents)
-        for (const e of events){
-          if (e.id == event.id) {
-            e.start = event.start
-          }
-          result.push(e)
-        }
-        EventsManager.writeEvents(result)
-      }
-      this.uploadActualEvents()
-    }
 
-    editEndDate(event){
-      const loadedEvents = EventsManager.readEvents()
-      let result = []
-      if (loadedEvents && loadedEvents.trim()){
-        const events = JSON.parse(loadedEvents)
-        for (const e of events){
-          if (e.id == event.id) {
-            e.end = event.end
-          }
-          result.push(e)
-        }
-        EventsManager.writeEvents(result)
-      }
-      this.uploadActualEvents()
-    }
+    // Edit fields of event
 
-    editEventDescription(event){
+    editEvent(event) {
+      logger.log('Edit event started ' + JSON.stringify(event))
       const loadedEvents = EventsManager.readEvents()
       let result = []
       if (loadedEvents && loadedEvents.trim()){
         const events = JSON.parse(loadedEvents)
         for (const e of events){
-          if (e.id == event.id) {
-            e.description = event.description
-          }
-          result.push(e)
+          if (e.id == event.id)
+            result.push(event)
+          else result.push(e)
         }
         EventsManager.writeEvents(result)
       }
@@ -309,6 +289,7 @@ export class EventsManager {
     }
 
     readSettings(){
+      logger.log('Reading settings from file')
       return readFileSync({
           path: 'settings',
           options: {
@@ -325,6 +306,7 @@ export class EventsManager {
             encoding: 'utf8',
         }
       })
+      logger.log('Save settings done')
     }
 
     static generateEventId() {
@@ -409,7 +391,7 @@ export class EventsManager {
 
     static getWeekRange(date) {
       const currentDate = new Date(date);
-      const dayOfWeek = currentDate.getDay(); // 0-воскресенье, 1-понедельник, ..., 6-суббота
+      const dayOfWeek = currentDate.getDay(); // 0-воскресенье, 1-понедельник, ...6-суббота
       const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
       const monday = new Date(currentDate);
       monday.setDate(currentDate.getDate() + diffToMonday);

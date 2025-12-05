@@ -1,4 +1,5 @@
 import { getText } from '@zos/i18n'
+import { WEEK_DAYS } from './Constants'
 
 export class Event {
     id
@@ -11,6 +12,7 @@ export class Event {
     ago_time
     date_period
     period
+    week_day
     status
     level
 
@@ -25,6 +27,7 @@ export class Event {
         this.eventStatus()
         this.datePeriod()
         this.eventLevel()
+        this.weekDay()
     }
 
     timePeriod(){
@@ -85,6 +88,15 @@ export class Event {
             this.level =  (now.getTime() - this.start.getTime()) / (this.end.getTime() - this.start.getTime()) * 100;
         }
     }
+    weekDay(){
+        const startWeekDay = this.start.getDay()
+        const endWeekDay = this.end.getDay()
+        this.week_day = startWeekDay == endWeekDay &&
+                        this.start.getDate() == this.end.getDate() &&
+                        this.start.getMonth() == this.end.getMonth() &&
+                        this.start.getFullYear() == this.end.getFullYear() ?
+                        getText(WEEK_DAYS[startWeekDay]) : getText(WEEK_DAYS[startWeekDay]) + ' - ' + getText(WEEK_DAYS[endWeekDay])
+    }
 
     getStatus(){ return this.status }
 
@@ -99,6 +111,8 @@ export class Event {
     getId() {return this.id}
 
     getDescription(){ return this.description }
+
+    getWeekDay(){ return this.week_day }
 
     static calculateTimeDifference(start, end) {
         const diffMs = end.getTime() - start.getTime();
