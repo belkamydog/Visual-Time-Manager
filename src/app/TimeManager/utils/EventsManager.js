@@ -7,18 +7,27 @@ const logger = log.getLogger('Event Manager')
 
 export class EventsManager {
     logger = log.getLogger('EventManager.js')
-
+    /**
+     * List of actual events in range [-2hours <= now <= +10 hours]
+     */
     listOfCurrentDayEvents = []
     /**
+     * Need for auto-delete events setting
      * 0-never 1-dayly, 2-weekly, 3-monthly,
      */
     autoDelete
-
+    
     constructor(){
       this.autoDelete = 0
       this.initSettings()
     }
 
+    /**
+     * Event settings module
+     */
+    /**
+     * Create or update file with app settings from device side
+     */
     initSettings(){
       logger.log('init settings')
       const settings = this.readSettings()
@@ -32,10 +41,10 @@ export class EventsManager {
         this.saveSettings(new_set)
       }
     }
-
-    getAutoDelete(){ return this.autoDelete }
-
-
+    /**
+     * Set auto-delete value
+     * @param  0 never delete, 1 day delete,  2 week delete, 3 month delete,
+     */
     setAutoDelete(value){
       this.autoDelete = value
       const set = this.readSettings()
@@ -47,6 +56,12 @@ export class EventsManager {
       }
       this.uploadActualEvents()
     }
+    /**
+     * Get auto-delete value
+     * @returns  0 never delete, 1 day delete,  2 week delete, 3 month delete,
+     */
+    getAutoDelete(){ return this.autoDelete }
+
 
     repeateRuleForMainPage(ev){
       let tmRepeat = 0
@@ -124,7 +139,7 @@ export class EventsManager {
       else if (now >= startEv && now <= endEv){
         result = true
       }
-      return result 
+      return result
     }
 
     getListOfALlEvents(){
@@ -151,7 +166,6 @@ export class EventsManager {
         if (ev.repeat == 1) tmRepeat = 24 * HOUR_MS
         else if ( ev.repeat == 2) tmRepeat = 7 * 24 * HOUR_MS
         else if (ev.repeat == 3) tmRepeat = EventsManager.getMsToSameDateInNextMonth(ev)
-        console.log('RES_LIST' + ev.repeat + ev.start)
         if (ev.repeat > 0) {
           const start = new Date(ev.start)
           const end = new Date(ev.end)
@@ -200,11 +214,10 @@ export class EventsManager {
               this.listOfCurrentDayEvents.push(updatedEvent)
             }
           }
-          else console.log('DELETE '+ JSON.stringify(ev))
         }
         EventsManager.writeEvents(afterDeleteFilterArr)
       }
-      else this.logger.log('0 events loaded')
+      else logger.log('0 events loaded')
     }
 
     addEvent(event){
