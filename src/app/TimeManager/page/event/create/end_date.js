@@ -1,22 +1,37 @@
-import { push } from '@zos/router'
-import { Time } from '@zos/sensor'
-import { widget, createWidget } from '@zos/ui'
+import { push , back} from '@zos/router'
+import { widget, createWidget, prop } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import {log} from '@zos/utils'
-import { DATE_TIME_PEACKER } from '../../../utils/Constants'
+import { DATE_TIME_PEACKER, styleColors } from '../../../utils/Constants'
 
 const logger = log.getLogger('end_date.js')
 
 Page({
+
+    attention(title){
+        title.setProperty(prop.SUBTITLE, getText('Invalid date'))
+    },
+
+    getDate(currentValues){
+        let endDate = new Date()
+            endDate.setFullYear(currentValues.year)
+            endDate.setMonth(currentValues.month)
+            endDate.setDate(currentValues.day)
+            endDate.setHours(currentValues.hour)
+            endDate.setMinutes(currentValues.minute)
+        return endDate
+    },
+
     onInit(params) {
         logger.log('End date page init with params: ' + params)
-        const time = new Time()
+        const current_event = JSON.parse(params)
+        const startEvent = new Date(current_event.start)
         let currentValues = {
-            day: time.getDate(),
-            month: time.getMonth(),
-            year: time.getFullYear(),
-            hour: time.getHours(),
-            minute: time.getMinutes()
+            day: startEvent.getDate(),
+            month: startEvent.getMonth(),
+            year: startEvent.getFullYear(),
+            hour: startEvent.getHours(),
+            minute: startEvent.getMinutes()
         }
         let dataArrays = {
             day: new Array(31).fill(0).map((d, index) => index + 1),
@@ -44,22 +59,25 @@ Page({
                         currentValues.minute = dataArrays.minute[select_index]
                         break                       
                     }
+                let endDate = this.getDate(currentValues)
+                if (startEvent.getTime() > endDate.getTime()) {
+                    this.attention(picker_widget)
+                }
+                else picker_widget.setProperty(prop.SUBTITLE, '')
             }
             if (event_type == 2){
-                let endDate = new Date()
-                endDate.setFullYear(currentValues.year)
-                endDate.setMonth(currentValues.month-1)
-                endDate.setDate(currentValues.day)
-                endDate.setHours(currentValues.hour)
-                endDate.setMinutes(currentValues.minute)
-
-                const current_event = JSON.parse(params)
-                current_event.end = endDate.toISOString()
-                logger.log('Add end to event: ' + JSON.stringify(current_event))
-                push({
-                    url: 'page/event/create/color',
-                    params: JSON.stringify(current_event)
-                })
+                let endDate = this.getDate(currentValues)
+                if (startEvent.getTime() > endDate.getTime()) {
+                    this.attention(picker_widget)
+                }
+                else {
+                    current_event.end = endDate.toISOString()
+                    logger.log('Add end to event: ' + JSON.stringify(current_event))
+                    push({
+                        url: 'page/event/create/color',
+                        params: JSON.stringify(current_event)
+                    })
+                }
             }
         }
         const picker_widget = createWidget(widget.WIDGET_PICKER, {
@@ -71,7 +89,7 @@ Page({
             data_config: [
                 {
                     data_array: dataArrays.day,
-                    init_val_index: time.getDate() - 1,
+                    init_val_index: startEvent.getDate() - 1,
                     unit: 'D',
                     support_loop: true,
                     font_size: DATE_TIME_PEACKER.font_size,
@@ -82,7 +100,7 @@ Page({
                 },
                 {
                     data_array: dataArrays.month,
-                    init_val_index: time.getMonth() - 1,
+                    init_val_index: startEvent.getMonth(),
                     unit: 'M',
                     support_loop: true,
                     font_size: DATE_TIME_PEACKER.font_size,
@@ -93,7 +111,7 @@ Page({
                 },                
                 {
                     data_array: dataArrays.year,
-                    init_val_index: time.getFullYear() - 1970,
+                    init_val_index: startEvent.getFullYear() - 1970,
                     unit: 'Y',
                     support_loop: true,
                     font_size: DATE_TIME_PEACKER.font_size,
@@ -104,7 +122,7 @@ Page({
                 },
                 {
                     data_array: dataArrays.hour,
-                    init_val_index: time.getHours(),
+                    init_val_index: startEvent.getHours(),
                     unit: 'H',
                     support_loop: true,
                     font_size: DATE_TIME_PEACKER.font_size,
@@ -115,7 +133,7 @@ Page({
                 },
                 {
                     data_array: dataArrays.minute,
-                    init_val_index: time.getMinutes(),
+                    init_val_index: startEvent.getMinutes(),
                     unit: 'M',
                     support_loop: true,
                     font_size: DATE_TIME_PEACKER.font_size,

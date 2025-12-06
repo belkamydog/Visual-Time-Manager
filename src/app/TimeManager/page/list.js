@@ -3,14 +3,29 @@ import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { DayEvents } from '../utils/Globals';
 import { push } from '@zos/router'
 import { getText } from '@zos/i18n'
-import { styleColors } from '../utils/Constants';
+import { HOUR_MS, styleColors } from '../utils/Constants';
 import {log} from '@zos/utils'
 import { EventsManager } from '../utils/EventsManager';
 import { Event } from '../utils/Event';
+import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
+
 
 const logger = log.getLogger('page/list.js')
 
 Page({
+
+  registerGes(){
+    onGesture({
+        callback: (event) => {
+          if (event === GESTURE_RIGHT) {
+            push({
+              url: 'page/index',
+            })
+          }
+          return true
+        },
+      })
+  },
 
   initBg(){
     this.circle = createWidget(widget.CIRCLE, {
@@ -27,7 +42,8 @@ Page({
     })
   },
 
-  initTitle(){
+  initTitle(date){
+    console.log('Date' + date)
     const titleText = getText('List of events')
     createWidget(widget.TEXT, {
       text: titleText,
@@ -40,9 +56,9 @@ Page({
       align_v: align.CENTER_V,
       color: styleColors.white
     })
-    const period = EventsManager.getWeekRange(new Date())
+    const period = EventsManager.getWeekRange(date)
     createWidget(widget.TEXT, {
-        text: period.start.getDate() + '.'+ (period.start.getMonth()+1) + ' - ' + period.end.getDate() + '.'+ (period.end.getMonth()+1),
+        text: Event.addZero(period.start.getDate()) + '.'+ Event.addZero((period.start.getMonth()+1)) + ' - ' + Event.addZero(period.end.getDate()) + '.'+ Event.addZero((period.end.getMonth()+1)),
         x: 0,
         y: 90,
         w: 480,
@@ -54,24 +70,27 @@ Page({
     })
   },
 
-  addKeyToDeleteAddEditBtnAndWeekDay(arrEv){
+  addKeys(arrEv){
     let result = []
+    let previous = {}
+    previous.previous_week = 'previous.png'
+    result.push(previous)
     for (let i of arrEv){
       i.weekDay = new Event(i).getWeekDay()
       i.del_img = 'delete.png'
       i.edit_img = 'edit.png'
+      i.color_state = new Event(i).getColorState()
       result.push(i)
     } 
-    let addEvent = {}
-    addEvent.add_btn = 'add_btn.png'
-    addEvent.add_btn_text = getText('New event'),
-    result.push(addEvent)
+    let next = {}
+    next.next_week = 'next.png'
+    result.push(next)
     return result
   },
 
   ifEmptyListOfEventsLabel(){
     createWidget(widget.TEXT, {
-      text: getText('Create event'),
+      text: getText('There are no events'),
       x: 0,
       y: 220,
       w: 480,
@@ -83,12 +102,26 @@ Page({
     })
   },
 
-  onInit() {
+  onInit(params) {
+    this.registerGes()
+    let period = null
+    try{
+      let date = JSON.parse(params)
+      period = new Date(date) 
+    } catch {
+      period = new Date()
+    }
     this.initBg()
-    this.initTitle();
-    const weekEvents = this.addKeyToDeleteAddEditBtnAndWeekDay(DayEvents.getListOfEventsInCurrentWeek(new Date()))
+    this.initTitle(period);
+    const listOfEvents = DayEvents.getListOfEventsInCurrentWeek(period)
+    for (const i of listOfEvents)
+      console.log('I ' + JSON.stringify(i))
+    const separatedByColorInd = DayEvents.separateListToPastCurrentFutureEvents(listOfEvents)
+    console.log('sep ' + JSON.stringify(separatedByColorInd))
+    const weekEvents = this.addKeys(listOfEvents)
+    console.log(JSON.stringify(weekEvents))
     logger.log('Init list of events: ' + JSON.stringify(weekEvents))
-    if (weekEvents.length == 1) 
+    if (weekEvents.length == 2) 
         this.ifEmptyListOfEventsLabel()
   
     logger.log('Creating scrollist of events...')
@@ -104,15 +137,23 @@ Page({
         item_drag_max_distance: -120,
         item_config: [
           {
+            type_id: 0,
+            item_bg_color: styleColors.brown,
+            item_bg_radius: 75,
+            image_view: [{ x: (380-50)/2, y: -70, w: 60, h: 60, key: 'previous_week', action: true }],
+            image_view_count: 1,
+            item_height: 0
+          },
+          {
             type_id: 1,
             item_bg_color: styleColors.dark_gray,
             item_bg_radius: 10,
             text_view: [
-              { x: 0, y: 0, w: 380, h: 40, key: 'date_period', color: 0xffffff, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 50, w: 380, h: 40, key: 'period', color: 0xffffff, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 80, w: 380, h: 80, key: 'description', color: styleColors.violet, text_size: 40, align_h: align.CENTER_H},
-              { x: 0, y: 150, w: 380, h: 40, key: 'weekDay', color: 0xffffff, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 200, w: 380, h: 40, key: 'status', color: 0xffffff, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 0, w: 380, h: 40, key: 'date_period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 50, w: 380, h: 40, key: 'period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 80, w: 380, h: 80, key: 'description', color: styleColors.white_smoke, text_size: 40, align_h: align.CENTER_H},
+              { x: 0, y: 150, w: 380, h: 40, key: 'weekDay', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 200, w: 380, h: 40, key: 'status', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
             ],
             text_view_count: 5,
             image_view: [
@@ -124,18 +165,55 @@ Page({
           },
           {
             type_id: 2,
+            item_bg_color: styleColors.dark_green,
+            item_bg_radius: 10,
+            text_view: [
+              { x: 0, y: 0, w: 380, h: 40, key: 'date_period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 50, w: 380, h: 40, key: 'period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 80, w: 380, h: 80, key: 'description', color: styleColors.white_smoke, text_size: 40, align_h: align.CENTER_H},
+              { x: 0, y: 150, w: 380, h: 40, key: 'weekDay', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 200, w: 380, h: 40, key: 'status', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+            ],
+            text_view_count: 5,
+            image_view: [
+              { x:410, y: 20, w: 64, h: 64, key: 'del_img', action: true },
+              { x:410, y: 150, w: 64, h: 64, key: 'edit_img', action: true }
+            ],
+            image_view_count: 2,
+            item_height: 250
+          },
+          {
+            type_id: 3,
+            item_bg_color: styleColors.dark_blue,
+            item_bg_radius: 10,
+            text_view: [
+              { x: 0, y: 0, w: 380, h: 40, key: 'date_period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 50, w: 380, h: 40, key: 'period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 80, w: 380, h: 80, key: 'description', color: styleColors.white_smoke, text_size: 40, align_h: align.CENTER_H},
+              { x: 0, y: 150, w: 380, h: 40, key: 'weekDay', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+              { x: 0, y: 200, w: 380, h: 40, key: 'status', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+            ],
+            text_view_count: 5,
+            image_view: [
+              { x:410, y: 20, w: 64, h: 64, key: 'del_img', action: true },
+              { x:410, y: 150, w: 64, h: 64, key: 'edit_img', action: true }
+            ],
+            image_view_count: 2,
+            item_height: 250
+          },
+          {
+            type_id: 4,
             item_bg_color: styleColors.brown,
             item_bg_radius: 75,
-            image_view: [{ x: (380-80)/2, y: 0, w: 80, h: 80, key: 'add_btn', action: true }],
+            image_view: [{ x: (380-50)/2, y: 0, w: 80, h: 80, key: 'next_week', action: true }],
             image_view_count: 1,
             item_height: 0
           },
         ],
-        item_config_count: 2,
+        item_config_count: 5,
         data_array: weekEvents,
         data_count: weekEvents.length,
-        item_focus_change_func: (list, index, focus) => {
-        },
+        item_focus_change_func: (list, index, focus) => {},
         item_click_func: (item, index, data_key) => {
           if (data_key === 'del_img') {
                 const deleteDialog = createModal({
@@ -157,26 +235,21 @@ Page({
                 })
                 deleteDialog.show(true) 
           }
-          else if (data_key === 'add_btn'){
-              const newEventDialog = createModal({
-                  content:  getText('Create event')+ '?',
-                  autoHide: false,
-                  show: false,
-                  onClick: (keyObj) => {
-                      const { type } = keyObj
-                      if (type === MODAL_CONFIRM) {
-                        logger.log('Create new event init')
-                        push ({
-                          url: 'page/event/create/description'
-                        })
-                        this.onInit()
-                      } else {
-                        logger.log('Create new event canceled')
-                          newEventDialog.show(false)
-                      }
-                  },
-                })
-                newEventDialog.show(true) 
+          else if (data_key === 'next_week'){
+            const newWeek = new Date(period.getTime() + HOUR_MS * 24 * 7)
+            console.log('new WEEk' + newWeek)
+            push({
+              url: 'page/list',
+              params: JSON.stringify(newWeek)
+            })
+          }
+          else if (data_key === 'previous_week'){
+            const newWeek = new Date(period.getTime() - HOUR_MS * 24 * 7)
+            console.log('new WEEk' + newWeek)
+            push({
+              url: 'page/list',
+              params: JSON.stringify(newWeek)
+            })
           }
           else if (data_key == 'edit_img'){
             logger.log('Calling edit menu...')
@@ -188,16 +261,34 @@ Page({
         data_type_config: [
           {
             start: 0,
-            end: weekEvents.length-2,
-            type_id: 1
+            end:  0,
+            type_id: 0
+          },
+          {
+            start: 1,
+            end: separatedByColorInd.past-1,
+            type_id: 1,
+            visible: separatedByColorInd.past > 0
+          },
+          {
+            start: separatedByColorInd.past,
+            end: separatedByColorInd.current-1,
+            type_id: 2,
+            visible: separatedByColorInd.current > separatedByColorInd.past
+          },
+          {
+            start: separatedByColorInd.current,
+            end: weekEvents.length - 2,
+            type_id: 3,
+            visible: separatedByColorInd.future > 0
           },
           {
             start: weekEvents.length-1,
             end: weekEvents.length-1,
-            type_id: 2
+            type_id: 4
           }
         ],
-        data_type_config_count: 2
+        data_type_config_count: 5
     })
   }
 })

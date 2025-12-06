@@ -1,5 +1,5 @@
 import { getText } from '@zos/i18n'
-import { WEEK_DAYS } from './Constants'
+import { styleColors, WEEK_DAYS } from './Constants'
 
 export class Event {
     id
@@ -15,6 +15,7 @@ export class Event {
     week_day
     status
     level
+    color_state
 
     constructor(event){
         this.id = event.id
@@ -28,7 +29,17 @@ export class Event {
         this.datePeriod()
         this.eventLevel()
         this.weekDay()
+        this.colorState()
     }
+
+    colorState(){
+        const now = new Date()
+        if (now > this.end)  this.color_state = styleColors.gray
+        else if (now >= this.start && now <= this.end) this.color_state = styleColors.green
+        else this.color_state = styleColors.blue_violet 
+    }
+
+    getColorState(){ return this.color_state }
 
     timePeriod(){
         this.period =  Event.addZero(this.start.getHours().toString()) + ':' +
@@ -76,9 +87,9 @@ export class Event {
         this.status = result
     }
     datePeriod(){
-        this.date_period= Event.addZero(this.start.getDate()) + '.' + Event.addZero(this.start.getMonth())
+        this.date_period= Event.addZero(this.start.getDate()) + '.' + Event.addZero(this.start.getMonth()+1)
         if (this.start.getDate() != this.end.getDate())
-            this.date_period +=  ' - ' + Event.addZero(this.end.getDate()) + '.' + Event.addZero(this.end.getMonth())
+            this.date_period +=  ' - ' + Event.addZero(this.end.getDate()) + '.' + Event.addZero(this.end.getMonth()+1)
     }
     eventLevel(){
         let now = new Date()

@@ -115,3 +115,7 @@ msgstr "Воскресенье"
 msgid "Edit"
 msgstr "Изменить"
 
+
+msgid "There are no events"
+msgstr "Нет событий"
+

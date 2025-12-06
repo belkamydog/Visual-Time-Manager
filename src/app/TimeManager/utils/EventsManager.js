@@ -254,8 +254,23 @@ export class EventsManager {
       }
       resultList.sort((a, b) => new Date(a.start) - new Date(b.start));
       logger.log('List of week events created...:' + resultList)
+
       return resultList
     }
+
+    separateListToPastCurrentFutureEvents(eventsList){
+      let past = [], current = [], future = []
+      const now = new Date()
+      for (const ev of eventsList){
+        const start = new Date(ev.start)
+        const end = new Date(ev.end)
+        if (now > end) past.push(ev)
+        else if (start > now) future.push(ev)
+        else current.push(ev)
+      }
+      return {past: past.length, current: past.length + current.length, future: past.length + current.length + future.length}
+    }
+
 
     /**
      * Uploading events wich pass auto-delete, repeat, actual filter
