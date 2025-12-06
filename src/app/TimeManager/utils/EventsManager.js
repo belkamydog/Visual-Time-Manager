@@ -30,13 +30,13 @@ export class EventsManager {
      */
     initSettings(){
       logger.log('init settings')
-      const settings = this.readSettings()
-      if (settings && settings.trim()){
+      try{
+        const settings = this.readSettings()
         this.autoDelete = JSON.parse(settings).clear_history
         logger.log('Loading settings done, autoDelete = '+ this.autoDelete)
-      }
-      else {
-        logger.log('Settings file is empty, creating new settings file..')
+      } catch(Error){
+        logger.error('Init settings falied', Error)
+        logger.log('Set default settings...')
         const new_set = { clear_history: 0 }
         this.saveSettings(new_set)
       }
@@ -70,38 +70,47 @@ export class EventsManager {
         path: 'events',
         data: '',
         options: {
-            encoding: 'utf8',
+          encoding: 'utf8',
         }
       })
+      logger.log('All events cleared')
     }
 
+    /**
+     * Checking event to repeat ON field and
+     * add next repeating events to the list of events if it in range [-2h <= now <= +10h]
+     * @param ev Checking event
+     */
     repeateRuleForMainPage(ev){
-      let tmRepeat = 0
-      if (ev.repeat == 1) tmRepeat = 24 * HOUR_MS
-      else if ( ev.repeat == 2) tmRepeat = 7 * 24 * HOUR_MS
-      else if (ev.repeat == 3) tmRepeat = EventsManager.getMsToSameDateInNextMonth(ev)
-      const start = new Date(ev.start)
-      const end = new Date(ev.end)
+      let repeatTimeMs = EventsManager.getRepeatTimeMs(ev)
       if (ev.repeat > 0) {
-        let new_start = start.getTime()
-        let new_end = end.getTime()
-        let new_ev = {...ev}
-        new_ev.repeat = 0
-        new_start += HOUR_MS * tmRepeat
-        new_end += HOUR_MS * tmRepeat
-        new_ev.start = new Date(new_start)
-        new_ev.end = new Date(new_end)
-        while (this.eventsFilter(new_ev)){
-          this.listOfCurrentDayEvents.push(EventsManager.addColorAnglesToEvent({...new_ev}))
-          if (ev.repeat == 3) tmRepeat = EventsManager.getMsToSameDateInNextMonth(ev)
-          new_start += HOUR_MS * tmRepeat
-          new_end += HOUR_MS * tmRepeat
-          new_ev.start = new Date(new_start)
-          new_ev.end = new Date(new_end)
+        logger.log('Repeating event start')
+        let new_start = new Date(ev.start).getTime()
+        let new_end = new Date(ev.end).getTime()
+        let repeated_event = {...ev}
+        repeated_event.repeat = 0
+        new_start += HOUR_MS * repeatTimeMs
+        new_end += HOUR_MS * repeatTimeMs
+        repeated_event.start = new Date(new_start)
+        repeated_event.end = new Date(new_end)
+        logger.log('Repeat: ' + JSON.stringify(repeated_event))
+        while (this.eventsFilter(repeated_event)){
+          this.listOfCurrentDayEvents.push(EventsManager.addAnglesToEvent({...repeated_event}))
+          if (ev.repeat == 3) repeatTimeMs = EventsManager.getMsToSameDateInNextMonth(ev)
+          new_start += HOUR_MS * repeatTimeMs
+          new_end += HOUR_MS * repeatTimeMs
+          repeated_event.start = new Date(new_start)
+          repeated_event.end = new Date(new_end)
+          logger.log('Repeat: ' + JSON.stringify(repeated_event))
         }
       }
     }
 
+    /**
+     * Checking events to pass auto-delete filter
+     * @param {*} event 
+     * @returns true if event does not pass auto-delete filter
+     */
     deleteFilter(event){
       if (event.repeat && event.repeat > 0) return false
       let result = false
@@ -126,25 +135,24 @@ export class EventsManager {
       return result
     }
 
-
+    /**
+     * Checking events to pass filter [-2h now +10h]
+     * @param {*} event 
+     * @returns true if events time pass filter [-2h now +10h]
+     */
     eventsFilter(event){
-      let result = false
       let now = new Date()
       let startEv = new Date(event.start)
       let endEv = new Date(event.end)
-      if ((startEv.getTime() - now.getTime()) <= (10 * HOUR_MS) && startEv >= now){
-        result = true
-      }
-      else if ((now.getTime() - endEv.getTime()) <= 2 * HOUR_MS && now >= endEv){
-        result = true
-
-      }
-      else if (now >= startEv && now <= endEv){
-        result = true
-      }
-      return result
+      return  ((startEv.getTime() - now.getTime()) <= (10 * HOUR_MS) && startEv >= now) || 
+              ((now.getTime() - endEv.getTime()) <= 2 * HOUR_MS && now >= endEv) ||
+              (now >= startEv && now <= endEv)
     }
 
+    /**
+     * Get list  all events
+     * @returns list of all events in the file events
+     */
     getListOfALlEvents(){
       const file = EventsManager.readEvents()
       const result = []
@@ -160,15 +168,61 @@ export class EventsManager {
       return result
     }
 
-    getListOfEventsBeforeDate(date){
+    /**
+     * Get list of events in the period
+     * @param {*} period expected {start: object Date , end: object Date}
+     * @returns list of period events
+     */
+    getListOfEventsInPeriod(period){
+      logger.log('Creating list of events in period: ' + JSON.stringify(period))
+      const loaded = this.getListOfALlEvents()
+      let resultList = []
+      for (const ev of loaded){
+        let repeatTimeMs = EventsManager.getRepeatTimeMs(ev)
+        if (ev.repeat > 0) {
+          let new_start = new Date(ev.start).getTime()
+          let new_end = new Date(ev.end).getTime()
+          let repeated_event = {...ev}
+          repeated_event.repeat = 0
+          if (new_start >= period.start.getTime()) 
+              resultList.push(new Event(repeated_event))  
+          new_start += repeatTimeMs
+          new_end += repeatTimeMs
+          repeated_event.start = new Date(new_start)
+          repeated_event.end = new Date(new_end)
+          while (new_start <= period.end.getTime()) {
+            if (new_start >= period.start.getTime()) 
+              resultList.push(new Event(repeated_event))
+            if (ev.repeat == 3) repeatTimeMs = EventsManager.getMsToSameDateInNextMonth(ev)
+            new_start += repeatTimeMs
+            new_end += repeatTimeMs
+            repeated_event.start = new Date(new_start)
+            repeated_event.end = new Date(new_end)
+          }
+        }
+        else {
+          const start = new Date(ev.start)
+          if ( start >= period.start && start <= period.end)
+            resultList.push(ev)
+        }
+      }
+      resultList.sort((a, b) => new Date(a.start) - new Date(b.start));
+      logger.log('List of events created...:' + resultList)
+      return resultList
+    }
+
+    /**
+     * Get list of events in the current week
+     * @param {*} date expected date in needs week 
+     * @returns list of current week events
+     */
+    getListOfEventsInCurrentWeek(date){
+      logger.log('Creating events list in current week...')
       const week = EventsManager.getWeekRange(date)
       const loaded = this.getListOfALlEvents()
       let resultList = []
       for (const ev of loaded){
-        let tmRepeat = 0
-        if (ev.repeat == 1) tmRepeat = 24 * HOUR_MS
-        else if ( ev.repeat == 2) tmRepeat = 7 * 24 * HOUR_MS
-        else if (ev.repeat == 3) tmRepeat = EventsManager.getMsToSameDateInNextMonth(ev)
+        let repeatTimeMs = EventsManager.getRepeatTimeMs(ev)
         if (ev.repeat > 0) {
           const start = new Date(ev.start)
           const end = new Date(ev.end)
@@ -178,16 +232,16 @@ export class EventsManager {
           new_ev.repeat = 0
           if (new_start >= week.start.getTime()) 
               resultList.push(new Event(new_ev))  
-          new_start += tmRepeat
-          new_end += tmRepeat
+          new_start += repeatTimeMs
+          new_end += repeatTimeMs
           new_ev.start = new Date(new_start)
           new_ev.end = new Date(new_end)
           while (new_start <= week.end.getTime()) {
             if (new_start >= week.start.getTime()) 
               resultList.push(new Event(new_ev))
-            if (ev.repeat == 3) tmRepeat = EventsManager.getMsToSameDateInNextMonth(ev)
-            new_start += tmRepeat
-            new_end += tmRepeat
+            if (ev.repeat == 3) repeatTimeMs = EventsManager.getMsToSameDateInNextMonth(ev)
+            new_start += repeatTimeMs
+            new_end += repeatTimeMs
             new_ev.start = new Date(new_start)
             new_ev.end = new Date(new_end)
           }
@@ -199,9 +253,13 @@ export class EventsManager {
         }
       }
       resultList.sort((a, b) => new Date(a.start) - new Date(b.start));
+      logger.log('List of week events created...:' + resultList)
       return resultList
     }
 
+    /**
+     * Uploading events wich pass auto-delete, repeat, actual filter
+     */
     uploadActualEvents(){
       const file = EventsManager.readEvents()
       this.listOfCurrentDayEvents = []
@@ -213,7 +271,7 @@ export class EventsManager {
             afterDeleteFilterArr.push(ev)
             this.repeateRuleForMainPage(ev)
             if (this.eventsFilter(ev)){
-              const updatedEvent = EventsManager.addColorAnglesToEvent(ev)
+              const updatedEvent = EventsManager.addAnglesToEvent(ev)
               this.listOfCurrentDayEvents.push(updatedEvent)
             }
           }
@@ -223,31 +281,33 @@ export class EventsManager {
       else logger.log('0 events loaded')
     }
 
+  /**
+   * Add event. Read events from file add new event and rewrite
+   * Also add ID to new Event
+   * @param {*} event new event
+   */
     addEvent(event){
-      const loaded_events = EventsManager.readEvents()
-      let result = []
-      if (loaded_events && loaded_events.trim()){
-         for (const ev of JSON.parse(loaded_events)){
-            const eventWithId = {
-              id: !event.id ? EventsManager.generateEventId(): event.id,
-              start: ev.start,
-              end: ev.end, 
-              description: ev.description,
-              color: ev.color,
-              repeat: ev.repeat
-            } 
-            result.push(eventWithId)
-         }
-         result.push(event)
+      logger.log('Creating new event...' + JSON.stringify(event))
+      event.id = EventsManager.generateEventId()
+      try{
+        const loaded_events = EventsManager.readEvents()
+        if (loaded_events && loaded_events.trim()){
+          let result = JSON.parse(loaded_events)
+          logger.log('Read previos events, and events to file...' + loaded_events)
+          result.push(event)
+          EventsManager.writeEvents(result)
+        }
+        else  EventsManager.writeEvents([event])
+        this.uploadActualEvents()
+      } catch(Error){
+        logger.error('Add event faled...', Error)
       }
-      else result.push(event)
-      EventsManager.writeEvents(result)
-      this.uploadActualEvents()
     }
 
-
-    // Edit fields of event
-
+    /**
+     * Edit event fields
+     * @param {*} event event with updated fields
+     */
     editEvent(event) {
       logger.log('Edit event started ' + JSON.stringify(event))
       const loadedEvents = EventsManager.readEvents()
@@ -264,7 +324,12 @@ export class EventsManager {
       this.uploadActualEvents()
     }
 
+    /**
+     * Delete event by ID
+     * @param {*} id id of deleted event
+     */
     deleteEventById(id){
+      logger.log('Delete event by ID: ' + id)
       const loadedEvents = EventsManager.readEvents()
       let result = []
       if (loadedEvents && loadedEvents.trim()){
@@ -279,29 +344,14 @@ export class EventsManager {
       this.uploadActualEvents()
     }
 
+    /**
+     * Get list of actual events (updated list Before it)
+     * @returns list of actual events [-2h now +10h]
+     */
     getListOfCurrentDayEvents(){
       this.listOfCurrentDayEvents.splice(0, this.listOfCurrentDayEvents.length) 
       this.uploadActualEvents()
       return this.listOfCurrentDayEvents
-    }
-
-    static readEvents(){
-      return readFileSync({
-          path: 'events',
-          options: {
-            encoding: 'utf8',
-          }
-        })
-    }
-
-    static writeEvents(events){
-      writeFileSync({
-        path: 'events',
-        data: JSON.stringify(events),
-        options: {
-            encoding: 'utf8',
-        }
-      })
     }
 
     readSettings(){
@@ -325,22 +375,40 @@ export class EventsManager {
       logger.log('Save settings done')
     }
 
+    static readEvents(){
+      return readFileSync({
+          path: 'events',
+          options: {
+            encoding: 'utf8',
+          }
+        })
+    }
+
+    static writeEvents(events){
+      writeFileSync({
+        path: 'events',
+        data: JSON.stringify(events),
+        options: {
+            encoding: 'utf8',
+        }
+      })
+    }
+
     static generateEventId() {
       return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
 
-    static addColorAnglesToEvent(event){
+    /**
+     * Calculating the initial and final angles for the watchface relative to the current time
+     * @param {*} event 
+     * @returns Event with calculated start and end angles
+     */
+    static addAnglesToEvent(event){
        const angles = EventsManager.calculateAngles(event, Date.now())
-       const result = {
-          id: event.id,
-          start: event.start,
-          end: event.end, 
-          description: event.description,
-          startAngle: angles.startAngle,
-          endAngle: angles.endAngle,
-          color: event.color
-        }
-        return result
+       const result = {...event}
+       result.startAngle = angles.startAngle
+       result.endAngle = angles.endAngle
+       return result
     }
 
     static calculateAngles(event, timeNow){
@@ -414,5 +482,13 @@ export class EventsManager {
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
       return { start: monday, end: sunday };
+    }
+
+    static getRepeatTimeMs(ev){
+        let repeatTimeMs = 0
+        if (ev.repeat == 1) repeatTimeMs = 24 * HOUR_MS
+        else if ( ev.repeat == 2) repeatTimeMs = 7 * 24 * HOUR_MS
+        else if (ev.repeat == 3) repeatTimeMs = EventsManager.getMsToSameDateInNextMonth(ev)
+        return repeatTimeMs
     }
 }

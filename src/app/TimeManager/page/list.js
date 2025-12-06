@@ -86,7 +86,7 @@ Page({
   onInit() {
     this.initBg()
     this.initTitle();
-    const weekEvents = this.addKeyToDeleteAddEditBtnAndWeekDay(DayEvents.getListOfEventsBeforeDate(new Date()))
+    const weekEvents = this.addKeyToDeleteAddEditBtnAndWeekDay(DayEvents.getListOfEventsInCurrentWeek(new Date()))
     logger.log('Init list of events: ' + JSON.stringify(weekEvents))
     if (weekEvents.length == 1) 
         this.ifEmptyListOfEventsLabel()
