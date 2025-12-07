@@ -1,6 +1,6 @@
 import { getText } from '@zos/i18n'
 import {log} from '@zos/utils'
-import { push } from '@zos/router'
+import { push, launchApp } from '@zos/router'
 import { Time } from '@zos/sensor'
 import { DayEvents, wfNumbers} from '../utils/Globals';
 import { onGesture, GESTURE_LEFT } from '@zos/interaction'
@@ -187,6 +187,12 @@ Page({
       text: Event.addZero(now.getDate().toString()) + 
         '.' + Event.addZero((now.getMonth()+1).toString()) + '.' + now.getFullYear().toString()
     })
+    date.addEventListener(event.SELECT, function() {
+      launchApp({
+        appId: SYSTEM_APP_CALENDAR,
+        native: true
+      })
+    })
 
     const weekDay = createWidget(widget.TEXT, {
       x: (480-180)/2,
@@ -257,6 +263,7 @@ Page({
     this.renderEvents(DayEvents.getListOfCurrentDayEvents())
     this.iniitCentralBackground()
     this.initDigitalTime()
+
   }
 
 })
