@@ -10,18 +10,17 @@ import { Event } from '../utils/Event';
 import { styleColors } from '../utils/Constants'
 import { createWidget, widget, prop, align, event } from '@zos/ui'
 
-Page({
-  logger: log.getLogger('index.js'),
+const logger = log.getLogger('Main page')
 
+Page({
   widgets:{
-    circle: null,
     canvas: null,
     background: null,
     hourArrow: null,
     destroyArrow: null,
     minuteArrow: null,
     digitTime: null,
-    date,
+    date: null,
     wfNumbers:{
       _0: null,
       _1: null,
@@ -52,13 +51,13 @@ Page({
   },
 
   initBg(){
-    this.circle = createWidget(widget.CIRCLE, {
+    createWidget(widget.CIRCLE, {
       center_x: 240,
       center_y: 240,
       radius: 240,
       color: styleColors.white_smoke,
     })
-    this.circle = createWidget(widget.CIRCLE, {
+    createWidget(widget.CIRCLE, {
       center_x: 240,
       center_y: 240,
       radius: 235,
@@ -77,6 +76,16 @@ Page({
       const angleInRadians = angle * Math.PI / 180;
       const x = centerX + radius * Math.cos(angleInRadians) - 20;
       const y = centerY + radius * Math.sin(angleInRadians) - 20;
+      let value = numbers[i]
+      let size = 40
+      if (numbers[i] == 12) {
+        size = 30
+        value = '☀️'
+      }
+      else if (numbers[i] == 0){
+        size = 30
+        value = '🌙'
+      } 
       angle += 30
       this.widgets.wfNumbers[`_${i}`] = createWidget(widget.TEXT, {
         x: Math.round(x),
@@ -85,16 +94,16 @@ Page({
         h: 50,
         color: 0xFFFFFF,
         font: 'fonts/Digiface (Rus by MarkStarikov2014) Regular.ttf',
-        text_size: 40,
+        text_size: size,
         align_h: align.CENTER_H,
         align_v: align.CENTER_V,
-        text: numbers[i]
+        text: value
       });
     }
   },
 
   initArrows(){
-    this.destroyArrow = createWidget(widget.IMG,{
+    this.widgets.destroyArrow = createWidget(widget.IMG,{
       x: 0,
       y: 0,
       h: 480,
@@ -106,7 +115,7 @@ Page({
       angle: EventsManager.convertTimeToAngle(new Date() - HOUR_MS*2),
       src: 'arrows/deadLine.png'
     })
-    this.hourArrow = createWidget(widget.TIME_POINTER, {
+    this.widgets.hourArrow = createWidget(widget.TIME_POINTER, {
       hour_centerX: 240,
       hour_centerY: 240,
       hour_posX: 2,
@@ -121,13 +130,13 @@ Page({
   },
 
   iniitCentralBackground(){
-    this.circle = createWidget(widget.CIRCLE, {
+    createWidget(widget.CIRCLE, {
       center_x: 240,
       center_y: 240,
       radius: 111,
       color: styleColors.white_smoke,
     })
-    this.circle = createWidget(widget.CIRCLE, {
+    createWidget(widget.CIRCLE, {
       center_x: 240,
       center_y: 240,
       radius: 105,
@@ -135,31 +144,9 @@ Page({
     })
   },
 
-  updateWfNumbers(){
-    wfNumbers.updateWatchFaceDigit(new Date().getHours())
-    const numbers = wfNumbers.getTimePointDigits()
-    for (let i = 0; i < 12; i++){
-      this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, numbers[i])
-    }
-  },
-
-  updateWidgets(){
-    this.updateWfNumbers()
-    this.destroyArrow.setProperty(prop.ANGLE, EventsManager.convertTimeToAngle(new Date() - HOUR_MS * 2))
-    this.digitTime.setProperty(prop.TEXT, Event.addZero(this.timeSensor.getHours().toString()) + 
-                              ':' + Event.addZero(this.timeSensor.getMinutes().toString()))
-      this.canvas.clear({
-        x: 0,
-        y: 0,
-        w: 480,
-        h: 480
-      })
-      this.renderEvents(DayEvents.getListOfCurrentDayEvents())
-  },
-
   initDigitalTime(){
     const timeSensor = new Time()
-    const digitTime = createWidget(widget.TEXT, {
+    this.widgets.digitTime = createWidget(widget.TEXT, {
       x: (480-190)/2,
       y: (480-170)/2,
       w: 180,
@@ -214,14 +201,14 @@ Page({
   },
 
   initCanvas(){
-    this.canvas = createWidget(widget.CANVAS, {
+    this.widgets.canvas = createWidget(widget.CANVAS, {
       x: 0,
       y: 0,
       w: 480,
       h: 480,
       alpha: 100 
     })
-    this.canvas.addEventListener(event.CLICK_UP, function cb(info) {
+    this.widgets.canvas.addEventListener(event.CLICK_UP, function cb(info) {
       for (const event of DayEvents.getListOfCurrentDayEvents()){
         if (EventsManager.isThisEvent(info.x, info.y, event)){
           push({
@@ -233,9 +220,39 @@ Page({
     })
   },
 
+  updateWfNumbers(){
+    logger.log('Wf numbers updated')
+    wfNumbers.updateWatchFaceDigit(new Date().getHours())
+    const numbers = wfNumbers.getTimePointDigits()
+    for (let i = 0; i < 12; i++){
+      if (numbers[i] == 12) this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, '☀️') 
+      else if (numbers[i] == 0) this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, '🌙')
+      else this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, numbers[i])
+    }
+  },
+
+  updateWidgets(){
+    logger.log('updating main page ...')
+    const now = new Date()
+    this.updateWfNumbers()
+    this.widgets.destroyArrow.setProperty(prop.ANGLE, EventsManager.convertTimeToAngle(now - HOUR_MS * 2))
+    this.widgets.digitTime.setProperty(prop.TEXT, 
+                              Event.addZero(now.getHours().toString()) + 
+                              ':' +
+                              Event.addZero(now.getMinutes().toString()))
+      this.widgets.canvas.clear({
+        x: 0,
+        y: 0,
+        w: 480,
+        h: 480
+      })
+      this.renderEvents(DayEvents.getListOfCurrentDayEvents())
+      logger.log('main page updated')
+  },
+
   drawEvent(event){
     const ev = new Event(event)
-    this.canvas.drawArc({
+    this.widgets.canvas.drawArc({
       center_x: 240,
       center_y: 240,
       radius_x: 225,
@@ -261,7 +278,5 @@ Page({
     this.renderEvents(DayEvents.getListOfCurrentDayEvents())
     this.iniitCentralBackground()
     this.initDigitalTime()
-
   }
-
 })
