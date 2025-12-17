@@ -12,7 +12,7 @@
     "vender": "zepp",
     "description": "Visual time planner application"
   },
-  "permissions": [],
+  "permissions": ["device:os.bg_service"],
   "runtime": {
     "apiVersion": {
       "compatible": "4.0",
@@ -44,6 +44,9 @@
             "page/event/edit/color",
             "page/event/edit/repeat"
           ]
+        },
+        "app-service": {
+          "services": ["app-service/service"]
         },
         "app-side": {
           "path": "app-side/index"
