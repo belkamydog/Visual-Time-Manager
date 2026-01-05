@@ -1,8 +1,8 @@
-import { push , back} from '@zos/router'
+import { push } from '@zos/router'
 import { widget, createWidget, prop } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import {log} from '@zos/utils'
-import { DATE_TIME_PEACKER, styleColors } from '../../../utils/Constants'
+import { DATE_TIME_PEACKER } from '../../../utils/Constants'
 
 const logger = log.getLogger('end_date.js')
 

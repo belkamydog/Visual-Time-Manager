@@ -10,41 +10,10 @@ import { HOUR_MS, WEEK_DAYS_SHORT } from '../utils/Constants';
 import { Event } from '../utils/models/Event';
 import { styleColors } from '../utils/Constants'
 import { EventService } from '../utils/services/EventService'
-import { readSync, statSync, openSync, O_RDONLY } from '@zos/fs'
-
-import { start } from '@zos/app-service'
-import { requestPermission } from '@zos/app'
-
 
 import { BasePage } from '@zeppos/zml/base-page'
 
 const logger = log.getLogger('Main page')
-
-async function initService () {
-    try {
-      const premissions = requestPermission({
-        permissions: ['device:os.bg_service'],
-          callback: (result) => {
-          console.log(result)
-      },
-      })
-      console.log('premission ' + premissions)
-      const result =  start({
-        file: 'app-service/service',
-         complete_func: (result) => {
-         console.log('Результат запуска:' + JSON.stringify(result));
-        },
-      });
-      if (result === 0) {
-          console.log('Успешный запуск сервиса');
-      } else {
-          console.log('Ошибка:', result);
-      }
-    } catch (error) {
-        console.log('Ошибка при запуске сервиса:', error);
-    }
-};
-
 
 Page(
   BasePage({
@@ -306,74 +275,15 @@ Page(
       }
     },
 
-    onCall(req) {
-      console.log(req)
-    },
-
-    getDataFromMobile() {
-      return this.request({
-        method: 'TEST_CONNECTION',
-        params: {
-          param1: 'param1',
-        },
-      })
-        .then((result) => {
-          console.log('result=>', result)
-        })
-        .catch((error) => {
-          console.log('error=>', error)
-        })
-    },
-
-    getDataFromNetwork() {
-      this.httpRequest({
-        method: 'get',
-        url: 'https://bible-api.com/john%203:16',
-      }).then((result) => {
-        console.log('result.status=>', JSON.stringify(result.status))
-        console.log('result.statusText=>', JSON.stringify(result.statusText))
-        console.log('result.headers=>', JSON.stringify(result.headers))
-        console.log('result.body=>', JSON.stringify(result.body))
-      })
-    },
-
     onInit(params){
-      initService()
-      // this.getDataFromNetwork()
-      // this.getDataFromMobile()
-      // this.initBg()
-      // this.registerGes()
-      // this.initWfNumbers()
-      // this.initArrows()
-      // this.initCanvas()
-      // this.renderEvents(eventServise.getActualEvents())
-      // this.iniitCentralBackground()
-      // this.initDigitalTime()
-
-    //   const fd = openSync({
-    //     path: 'events',
-    //     flag: O_RDONLY,
-    //     options:{
-    //       appId: 1099579,
-    //     }
-    //   })
-
-    //   const fileInfo = statSync({
-    //     path: 'events',
-    //     options: {
-    //         appId: 1099579
-    //     }
-    // });
-    //   console.log(fd)
-    //   const buffer = new ArrayBuffer(fileInfo.size)
-    //   const result = readSync({
-    //     fd,
-    //     buffer,
-    //   })
-
-    // const uint8Array = new Uint8Array(buffer);
-    // const text = String.fromCharCode.apply(null, uint8Array);
-    // console.log('TEXT: ' + text)
-    }
+      this.initBg()
+      this.registerGes()
+      this.initWfNumbers()
+      this.initArrows()
+      this.initCanvas()
+      this.renderEvents(eventServise.getActualEvents())
+      this.iniitCentralBackground()
+      this.initDigitalTime()
+    },
   })
 )

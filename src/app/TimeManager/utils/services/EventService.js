@@ -15,31 +15,32 @@ export class EventService {
     getActualEvents(){
         this.#autoDeleteEvents()
         this.#uploadActualEvents()
+        FileService.writeFile('actual_events', this.#convertToEvent())
         return this.actualEvents
     }
-
+    
     /**
-     * Метод для очистки истории событий
+     * Method for clearing event history
      * 
-     * Удаляет все сохраненные события, перезаписывая файл с событиями пустым массивом.
+     * Deletes all saved events by overwriting the events file with an empty array.
      * 
      * @function clearHistoryOfEvents
-     * @throws {Error} Генерирует ошибку, если очистка истории завершилась неудачно
+     * @throws {Error} Throws error if history clearing fails
      * 
      * @example
-     * // Пример использования
+     * // Usage example
      * try {
      *     clearHistoryOfEvents();
-     *     console.log('История событий успешно очищена');
+     *     console.log('Event history cleared successfully');
      * } catch (error) {
-     *     console.error('Ошибка при очистке истории:', error);
+     *     console.error('Error clearing history:', error);
      * }
      * 
-     * @returns {void} Метод не возвращает значение
+     * @returns {void} Method doesn't return a value
      * 
-     * @see FileService.writeFile - метод для записи в файл
-     * @see logger.log - метод логирования успешных операций
-     * @see logger.error - метод логирования ошибок
+     * @see FileService.writeFile - method for writing to file
+     * @see logger.log - method for logging successful operations
+     * @see logger.error - method for logging errors
      */
     clearHistoryOfEvents(){
         logger.log('Delete events history init...')
@@ -53,24 +54,24 @@ export class EventService {
     }
 
     /**
-     * Создает новое событие и сохраняет его в список
+     * Creates a new event and saves it to the list
      * 
-     * Метод выполняет следующие действия:
-     * 1. Валидирует поля нового события
-     * 2. Загружает существующие события
-     * 3. Генерирует уникальный ID для нового события
-     * 4. Добавляет событие в список
-     * 5. Сохраняет обновленный список
+     * Method performs the following actions:
+     * 1. Validates fields of the new event
+     * 2. Loads existing events
+     * 3. Generates unique ID for the new event
+     * 4. Adds event to the list
+     * 5. Saves updated list
      * 
      * @public
-     * @param {Event} event - объект нового события
+     * @param {Event} event - new event object
      * @returns {void}
      * 
      * @description
-     * Метод предназначен для добавления нового события в календарь.
-     * Перед сохранением событие проходит валидацию и получает уникальный ID.
+     * Method is intended for adding new events to the calendar.
+     * Before saving, the event is validated and receives a unique ID.
      * 
-     * @throws {Error} В случае возникновения ошибок при создании события
+     * @throws {Error} In case of errors when creating event
      */
     createNewEvent(event) {
         logger.log('Creating new event...');
@@ -89,22 +90,22 @@ export class EventService {
     }
 
     /**
-     * Редактирует существующее событие в списке
+     * Edits an existing event in the list
      * 
-     * Метод ищет событие по ID и заменяет его на новую версию
+     * Method searches for event by ID and replaces it with new version
      * 
      * @public
-     * @param {Event} event - объект события с обновленными данными
+     * @param {Event} event - event object with updated data
      * @returns {void}
      * 
      * @description
-     * Метод выполняет следующие действия:
-     * 1. Загружает текущие события из файла
-     * 2. Проходит по списку событий
-     * 3. Заменяет событие с совпадающим ID на новое
-     * 4. Сохраняет обновленный список
+     * Method performs the following actions:
+     * 1. Loads current events from file
+     * 2. Iterates through event list
+     * 3. Replaces event with matching ID with the new one
+     * 4. Saves updated list
      * 
-     * @throws {Error} В случае возникновения ошибок при работе с файлами
+     * @throws {Error} In case of errors when working with files
      */
     editEvent(event) {
         logger.log('Edit event started...');
@@ -128,22 +129,22 @@ export class EventService {
     }
 
     /**
-     * Удаляет событие по его ID
+     * Deletes event by its ID
      * 
-     * Метод находит событие с указанным ID и удаляет его из списка
+     * Method finds event with specified ID and removes it from the list
      * 
      * @public
-     * @param {number} id - уникальный идентификатор события для удаления
+     * @param {number} id - unique event identifier for deletion
      * @returns {void}
      * 
      * @description
-     * Метод выполняет следующие действия:
-     * 1. Загружает все события из файла
-     * 2. Фильтрует события, оставляя только те, чей ID не совпадает с переданным
-     * 3. Сохраняет обновленный список
-     * 4. Обновляет список актуальных событий
+     * Method performs the following actions:
+     * 1. Loads all events from file
+     * 2. Filters events, keeping only those whose ID doesn't match the provided one
+     * 3. Saves updated list
+     * 4. Updates list of actual events
      * 
-     * @throws {Error} В случае возникновения ошибок при удалении события
+     * @throws {Error} In case of errors when deleting event
      */
     deleteEvent(id) {
         try {
@@ -186,21 +187,21 @@ export class EventService {
     }
 
     /**
-     * Автоматически удаляет устаревшие события из списка
+     * Automatically deletes outdated events from the list
      * 
-     * Метод фильтрует события на основе настроек автоудаления и сохраняет только актуальные
+     * Method filters events based on auto-delete settings and saves only relevant ones
      * 
      * @private
      * @returns {void}
      * 
      * @description
-     * Метод выполняет следующие действия:
-     * 1. Загружает настройки автоудаления
-     * 2. Загружает все события
-     * 3. Фильтрует события по условиям удаления
-     * 4. Сохраняет отфильтрованный список
+     * Method performs the following actions:
+     * 1. Loads auto-delete settings
+     * 2. Loads all events
+     * 3. Filters events by deletion conditions
+     * 4. Saves filtered list
      * 
-     * @throws {Error} В случае возникновения ошибок при обработке событий
+     * @throws {Error} In case of errors when processing events
      */
     #autoDeleteEvents() {
         try {
@@ -224,21 +225,21 @@ export class EventService {
     }
 
     /**
-     * Загружает актуальные события из файла и подготавливает их к отображению
+     * Loads actual events from file and prepares them for display
      * 
-     * Метод фильтрует события по актуальности и добавляет к ним необходимые параметры отображения
+     * Method filters events by relevance and adds necessary display parameters to them
      * 
      * @private
      * @returns {void}
      * 
      * @description
-     * Метод выполняет следующие действия:
-     * 1. Загружает все события из файла
-     * 2. Фильтрует события по актуальности
-     * 3. Добавляет углы отображения для каждого события
-     * 4. Сохраняет актуальные события в массив actualEvents
+     * Method performs the following actions:
+     * 1. Loads all events from file
+     * 2. Filters events by relevance
+     * 3. Adds display angles for each event
+     * 4. Saves actual events to actualEvents array
      * 
-     * @throws {Error} В случае возникновения ошибок при обработке событий
+     * @throws {Error} In case of errors when processing events
      */
     #uploadActualEvents() {
         try {
@@ -270,48 +271,57 @@ export class EventService {
     }
 
     /**
-     * Фильтрует события по их актуальности
+     * Filters events by their relevance
      * 
-     * Метод определяет, является ли событие актуальным для отображения на основе его временных границ
+     * Method determines if event is relevant for display based on its time boundaries
      * 
      * @private
-     * @param {Event} event - событие для проверки
-     * @returns {boolean} true - если событие актуально, false - иначе
+     * @param {Event} event - event to check
+     * @returns {boolean} true - if event is relevant, false - otherwise
      * 
      * @description
-     * Событие считается актуальным, если выполняется одно из условий:
-     * 1. Событие начинается не позже чем через 10 часов и не раньше текущего момента
-     * 2. Событие закончилось не более чем 2 часа назад
-     * 3. Событие происходит прямо сейчас (текущее время находится между start и end)
+     * Event is considered relevant if one of the conditions is met:
+     * 1. Event starts no later than in 10 hours and no earlier than current moment
+     * 2. Event ended no more than 2 hours ago
+     * 3. Event is happening right now (current time is between start and end)
      */
     #actualEventsFilter(event) {
         const now = new Date();
         const startEv = new Date(event.start);
         const endEv = new Date(event.end);
         return (
-            // Событие начинается в ближайшие 10 часов и не раньше текущего момента
+            // Event starts within next 10 hours and not before current moment
             ((startEv.getTime() - now.getTime()) <= (10 * HOUR_MS) && startEv >= now) ||
-            // Событие закончилось не более 2 часов назад
+            // Event ended no more than 2 hours ago
             ((now.getTime() - endEv.getTime()) <= (2 * HOUR_MS) && now >= endEv) ||
-            // Событие происходит прямо сейчас
+            // Event is happening right now
             (now >= startEv && now <= endEv)
         );
     }
 
 
+    #convertToEvent(){
+        let result = []
+        this.actualEvents.forEach((item)=>{
+            result.push(new Event(item))
+        })
+        return result
+    }
+
+
     /**
-     * Определяет необходимость автоматического удаления события
+     * Determines necessity of automatic event deletion
      * 
      * @public
-     * @param {Object} event - объект события с полями repeat и end
+     * @param {Object} event - event object with fields repeat and end
      * @param {String} autoDelete - never, day, week, month
-     * @returns {boolean} true - если событие нужно удалить, false - иначе
+     * @returns {boolean} true - if event should be deleted, false - otherwise
      * 
      * @description
-     * Метод проверяет, нужно ли автоматически удалить событие на основе:
-     * - наличия повтора события
-     * - настроек автоудаления
-     * - разницы между текущей датой и датой окончания события
+     * Method checks if event should be automatically deleted based on:
+     * - presence of event repetition
+     * - auto-delete settings
+     * - difference between current date and event end date
      */
     #deleteFilter(event, autoDelete) {
         if (event.repeat && event.repeat != 'never') return false;
@@ -319,17 +329,17 @@ export class EventService {
         const now = new Date();
         const end = new Date(event.end);
         if (autoDelete === 'day') {
-            // Удаление через 24 часа после окончания
+            // Deletion 24 hours after end
             if (now > end && (now.getTime() - end.getTime()) > HOUR_MS * 24) {
                 result = true;
             }
         } else if (autoDelete === 'week') {
-            // Удаление через 7 дней после окончания
+            // Deletion 7 days after end
             if (now > end && (now.getTime() - end.getTime()) > HOUR_MS * 24 * 7) {
                 result = true;
             }
         } else if (autoDelete === 'month') {
-            // Удаление через 31 день после окончания
+            // Deletion 31 days after end
             if (now > end && (now.getTime() - end.getTime()) > HOUR_MS * 24 * 31) {
                 result = true;
             }
@@ -341,29 +351,29 @@ export class EventService {
     }
 
     /**
-     * Метод для загрузки событий из файла
+     * Method for loading events from file
      * 
-     * Загружает сохраненные события из указанного файла в формате JSON.
-     * Обрабатывает возможные ошибки при чтении файла или парсинге данных.
+     * Loads saved events from specified file in JSON format.
+     * Handles possible errors when reading file or parsing data.
      * 
      * @function loadEvents
-     * @returns {Array|string} Массив событий в формате JSON или пустая строка при ошибке
+     * @returns {Array|string} Array of events in JSON format or empty string on error
      * 
-     * @throws {Error} Внутренняя ошибка при чтении файла
+     * @throws {Error} Internal error when reading file
      * 
      * @example
-     * // Пример использования
+     * // Usage example
      * try {
      *     const events = loadEvents();
      *     if (events instanceof Array) {
-     *         // Обработка загруженных событий
+     *         // Process loaded events
      *     }
      * } catch (error) {
-     *     console.error('Ошибка при загрузке событий:', error);
+     *     console.error('Error loading events:', error);
      * }
      * 
-     * @see FileService.readFile - метод для чтения файла
-     * @see JSON.parse - метод для парсинга JSON данных
+     * @see FileService.readFile - method for reading file
+     * @see JSON.parse - method for parsing JSON data
      */
     #loadEvents(){
         try {
@@ -377,19 +387,19 @@ export class EventService {
     }
 
     /**
-     * Сохраняет список событий в файл
+     * Saves event list to file
      * 
-     * Метод записывает переданный массив событий в файл в формате JSON
+     * Method writes provided event array to file in JSON format
      * 
      * @private
-     * @param {Array<Event>} listOfEvents - массив событий для сохранения
+     * @param {Array<Event>} listOfEvents - event array for saving
      * @returns {void}
      * 
      * @description
-     * Метод выполняет запись переданного списка событий в файл.
-     * Каждое событие должно соответствовать ожидаемой структуре данных.
+     * Method writes provided event list to file.
+     * Each event must conform to expected data structure.
      * 
-     * @throws {Error} В случае возникновения ошибок при записи файла
+     * @throws {Error} In case of errors when writing file
      */
     #saveEvents(listOfEvents) {
         try {
@@ -402,23 +412,23 @@ export class EventService {
     }
 
     /**
-     * Создает список повторяющихся событий на основе заданного периода
+     * Creates list of repeating events based on specified period
      * 
-     * Метод генерирует копии события согласно правилу повторения до указанной конечной даты
+     * Method generates event copies according to repetition rule up to specified end date
      * 
      * @private
-     * @param {Event} event - исходное событие с правилом повторения
-     * @param {Object} period - объект с полями start и end, определяющий период повторения
-     * @returns {Event[]} массив повторяющихся событий
+     * @param {Event} event - source event with repetition rule
+     * @param {Object} period - object with fields start and end, defining repetition period
+     * @returns {Event[]} array of repeating events
      * 
      * @description
-     * Метод поддерживает следующие типы повторения:
-     * - 'never' - не повторяется
-     * - 'day' - ежедневное повторение
-     * - 'week' - еженедельное повторение
-     * - 'month' - ежемесячное повторение
+     * Method supports following repetition types:
+     * - 'never' - no repetition
+     * - 'day' - daily repetition
+     * - 'week' - weekly repetition
+     * - 'month' - monthly repetition
      * 
-     * Для каждого типа повторения используется свой интервал времени
+     * Each repetition type uses its own time interval
      */
     #repeateRule(event, period, listToAdd) {
         let repeatMs = this.#getRepeatTimeMs(event);
@@ -445,17 +455,17 @@ export class EventService {
     }
 
     /**
-     * Метод для проверки корректности полей события
+     * Method for checking correctness of event fields
      * 
-     * Проверяет, соответствуют ли предоставленные данные формату события
+     * Checks if provided data conforms to event format
      * 
      * @function checkEventFields
-     * @param {Object} event - объект события для проверки
-     * @returns {boolean} true если все поля корректны, иначе false
+     * @param {Object} event - event object to check
+     * @returns {boolean} true if all fields are correct, otherwise false
      * 
      * @example
      * const event = {
-     *     description: 'Встреча с клиентом',
+     *     description: 'Meeting with client',
      *     startDate: new Date(),
      *     endDate: new Date(),
      *     color: '0x000000',
@@ -464,7 +474,7 @@ export class EventService {
      * 
      * const isValid = checkEventFields(event); // true
      * 
-     * @throws {Error} Генерирует ошибку, если какое-либо поле не соответствует требованиям
+     * @throws {Error} Throws error if any field doesn't meet requirements
      * 
      * @see Event format requirements:
      *      - description: string
@@ -496,54 +506,54 @@ export class EventService {
     }
 
     /**
-     * Метод для генерации уникального ID события
+     * Method for generating unique event ID
      * 
-     * Генерирует уникальный идентификатор события, комбинируя текущее время
-     * в формате base-36 и случайную строку. Такой подход обеспечивает высокую
-     * вероятность уникальности сгенерированного ID.
+     * Generates unique event identifier by combining current time
+     * in base-36 format and random string. This approach provides high
+     * probability of generated ID uniqueness.
      * 
      * @function generateEventId
-     * @returns {string} Уникальный идентификатор события
+     * @returns {string} Unique event identifier
      * 
      * @description
-     * Метод создает ID, состоящий из двух частей:
-     * 1. Текущее время в миллисекундах, преобразованное в base-36
-     * 2. Случайная строка из 9 символов в base-36
+     * Method creates ID consisting of two parts:
+     * 1. Current time in milliseconds, converted to base-36
+     * 2. Random string of 9 characters in base-36
      * 
-     * Пример возвращаемого значения: 'r3m123456789'
+     * Example return value: 'r3m123456789'
      * 
-     * @see toString(36) - преобразование числа в строку в системе счисления base-36
-     *      (использует цифры 0-9 и буквы a-z)
+     * @see toString(36) - converting number to string in base-36 number system
+     *      (uses digits 0-9 and letters a-z)
      * 
      * @example
-     * const eventId = generateEventId(); // например 'r3m123456789'
+     * const eventId = generateEventId(); // e.g. 'r3m123456789'
      */
     #generatorId() {
       return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
 
     /**
-     * Метод для автоматической проверки и генерации уникального ID события
+     * Method for automatic checking and generation of unique event ID
      * 
-     * Проверяет наличие дубликатов ID в списке событий и, если дубликат найден,
-     * автоматически генерирует новый уникальный ID для события.
+     * Checks for ID duplicates in event list and, if duplicate found,
+     * automatically generates new unique ID for event.
      * 
      * @function checkDuplicateId
-     * @param {Object} event - объект события, для которого проверяется ID
-     * @param {Array} allEvents - массив всех существующих событий для проверки
+     * @param {Object} event - event object for which ID is checked
+     * @param {Array} allEvents - array of all existing events for checking
      * 
-     * @returns {void} Метод модифицирует оригинальный объект event
+     * @returns {void} Method modifies original event object
      * 
-     * @throws {Error} Генерирует ошибку, если:
-     *   - event не является объектом
-     *   - allEvents не является массивом
-     *   - метод generateEventId() недоступен
+     * @throws {Error} Throws error if:
+     *   - event is not an object
+     *   - allEvents is not an array
+     *   - generateEventId() method is unavailable
      * 
      * @example
-     * // Пример использования
+     * // Usage example
      * const event = {
      *     id: 'possible-duplicate',
-     *     description: 'Новое событие'
+     *     description: 'New event'
      * };
      * 
      * const allEvents = [
@@ -553,13 +563,13 @@ export class EventService {
      * ];
      * 
      * checkDuplicateId(event, allEvents);
-     * // После выполнения event.id будет содержать уникальный ID
+     * // After execution event.id will contain unique ID
      * 
-     * @see generateEventId - метод для генерации нового ID
-     * @see Array.prototype.some - метод для проверки наличия дубликатов
+     * @see generateEventId - method for generating new ID
+     * @see Array.prototype.some - method for checking duplicates
      * 
-     * @note Метод модифицирует оригинальный объект event,
-     *       изменяя его свойство id при необходимости
+     * @note Method modifies original event object,
+     *       changing its id property if necessary
      */
     #generateEventId(event, allEvents) {
         if (!event || typeof event !== 'object') {
@@ -574,56 +584,56 @@ export class EventService {
     }
 
     /**
-     * Добавляет углы к событию на основе его временных границ
+     * Adds angles to event based on its time boundaries
      * 
      * @private
-     * @param {Object} event - объект события с полями start и end
+     * @param {Object} event - event object with fields start and end
      * @description
-     * Метод вычисляет начальный и конечный углы для визуального представления события
-     * на циферблате и добавляет их в объект события.
+     * Method calculates start and end angles for visual representation of event
+     * on watch face and adds them to event object.
      */
     #addAnglesToEvent(event) {
-        // Вычисляем углы для события
+        // Calculate angles for event
         const angles = this.#calculateEventAngles(event, Date.now());
-        // Добавляем углы в объект события
+        // Add angles to event object
         event.startAngle = angles.startAngle;
         event.endAngle = angles.endAngle;
     }
 
     /**
-     * Вычисляет углы для визуального представления события
+     * Calculates angles for visual representation of event
      * 
      * @private
-     * @param {Object} event - объект события с полями start и end
-     * @param {number} timeNow - текущее время в миллисекундах
-     * @returns {Object} объект с полями startAngle и endAngle
+     * @param {Object} event - event object with fields start and end
+     * @param {number} timeNow - current time in milliseconds
+     * @returns {Object} object with fields startAngle and endAngle
      * 
      * @description
-     * Метод рассчитывает углы на основе временных границ события,
-     * учитывая ограничения по времени отображения.
+     * Method calculates angles based on event time boundaries,
+     * considering display time limitations.
      * 
-     * Ограничения:
-     * - События старше 2 часов от текущего времени начинаются с угла 2-часовой давности
-     * - События, заканчивающиеся позже чем через 10 часов, обрезаются до 10-часового предела
+     * Limitations:
+     * - Events older than 2 hours from current time start from 2-hour ago angle
+     * - Events ending later than 10 hours are truncated to 10-hour limit
      */
     #calculateEventAngles(event, timeNow) {
-        // Вычисляем базовые углы для начала и конца события
+        // Calculate base angles for event start and end
         let startAngle = EventService.convertTimeToAngle(event.start);
         let endAngle = EventService.convertTimeToAngle(event.end);
         
-        // Вычисляем время отсечения (2 часа назад)
+        // Calculate cutoff time (2 hours ago)
         const deleteTime = new Date(new Date(timeNow).getTime() - 2 * HOUR_MS);
         
-        // Корректируем углы с учетом временных ограничений
+        // Adjust angles considering time limitations
         if (new Date(event.start) < deleteTime) {
-            // Если начало события раньше 2 часов назад, начинаем от 2-часовой отметки
+            // If event starts before 2 hours ago, start from 2-hour mark
             startAngle = EventService.convertTimeToAngle(deleteTime);
         } else if (new Date(event.end).getTime() > timeNow + 10 * HOUR_MS) {
-            // Если конец события позже чем через 10 часов, обрезаем до 10-часовой отметки
+            // If event ends later than 10 hours, truncate to 10-hour mark
             endAngle = EventService.convertTimeToAngle(timeNow + 10 * HOUR_MS);
         }
         
-        // Корректируем угол начала, если он больше угла конца
+        // Adjust start angle if it's greater than end angle
         startAngle = startAngle > endAngle ? (startAngle - 360) : startAngle;
         
         return {
@@ -641,21 +651,21 @@ export class EventService {
     }
 
     /**
-     * Вычисляет количество миллисекунд до того же числа в следующем месяце
+     * Calculates number of milliseconds to same date in next month
      * 
-     * Метод рассчитывает разницу во времени между датой события и тем же числом в следующем месяце,
-     * учитывая количество дней в следующем месяце
+     * Method calculates time difference between event date and same date in next month,
+     * considering number of days in next month
      * 
      * @private
-     * @param {Event} event - событие, для которого производится расчет
-     * @returns {number} количество миллисекунд до той же даты в следующем месяце
+     * @param {Event} event - event for which calculation is performed
+     * @returns {number} number of milliseconds to same date in next month
      * 
      * @description
-     * Метод учитывает:
-     * - переход между месяцами
-     * - переход между годами
-     * - разное количество дней в месяцах
-     * - корректную обработку последнего дня месяца
+     * Method considers:
+     * - transition between months
+     * - transition between years
+     * - different number of days in months
+     * - correct handling of last day of month
      */
     #getMsToSameDateInNextMonth(event) {
         const start = new Date(event.start);
@@ -674,21 +684,21 @@ export class EventService {
     }
 
     /**
-     * Определяет границы недели для заданной даты
+     * Defines week boundaries for given date
      * 
-     * Метод вычисляет понедельник и воскресенье текущей недели для указанной даты
+     * Method calculates Monday and Sunday of current week for specified date
      * 
      * @private
-     * @param {Date|string} date - дата, для которой определяется неделя
-     * @returns {{start: Date, end: Date}} объект с датами начала (понедельник) и конца (воскресенье) недели
+     * @param {Date|string} date - date for which week is determined
+     * @returns {{start: Date, end: Date}} object with start (Monday) and end (Sunday) dates of week
      * 
      * @description
-     * Неделя считается с понедельника по воскресенье.
-     * Метод корректно обрабатывает переход между месяцами и годами.
+     * Week is considered from Monday to Sunday.
+     * Method correctly handles transitions between months and years.
      */
     static getWeekRange(date) {
       const currentDate = new Date(date);
-      const dayOfWeek = currentDate.getDay(); // 0-воскресенье, 1-понедельник, ...6-суббота
+      const dayOfWeek = currentDate.getDay(); // 0-Sunday, 1-Monday, ...6-Saturday
       const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
       const monday = new Date(currentDate);
       monday.setDate(currentDate.getDate() + diffToMonday);
@@ -706,37 +716,37 @@ export class EventService {
     }
 
     /**
-     * Преобразует время в градусы для отображения на циферблате
+     * Converts time to degrees for display on watch face
      * 
-     * Функция конвертирует часы и минуты в градусы поворота стрелки часов.
-     * Используется для корректного отображения положения часовой и минутной стрелок
-     * на аналоговом циферблате.
+     * Function converts hours and minutes to rotation degrees of clock hand.
+     * Used for correct display of hour and minute hand positions
+     * on analog watch face.
      * 
      * @static
-     * @param {string|Date} time - время в формате строки или объект Date
-     * @returns {number} угол в градусах [0, 360)
+     * @param {string|Date} time - time in string format or Date object
+     * @returns {number} angle in degrees [0, 360)
      * 
      * @description
-     * Алгоритм конвертации:
-     * - 1 час соответствует 30 градусам (полный круг 360° / 12 часов)
-     * - 1 минута соответствует 0.5 градусам (30° / 60 минут)
+     * Conversion algorithm:
+     * - 1 hour corresponds to 30 degrees (full circle 360° / 12 hours)
+     * - 1 minute corresponds to 0.5 degrees (30° / 60 minutes)
      * 
-     * Пример:
-     * - 12:00 -> 0 градусов
-     * - 3:00 -> 90 градусов
-     * - 6:00 -> 180 градусов
-     * - 9:00 -> 270 градусов
-     * - 12:30 -> 180 градусов (30 минут * 0.5°/мин)
+     * Example:
+     * - 12:00 -> 0 degrees
+     * - 3:00 -> 90 degrees
+     * - 6:00 -> 180 degrees
+     * - 9:00 -> 270 degrees
+     * - 12:30 -> 180 degrees (30 minutes * 0.5°/min)
      */
     static convertTimeToAngle(time) {
-        // Создаем объект даты из переданного времени
+        // Create date object from provided time
         let date = new Date(time);
         
-        // Вычисляем общее количество минут
-        // (часы * 60 + минуты) * 0.5°/минуту
+        // Calculate total number of minutes
+        // (hours * 60 + minutes) * 0.5°/minute
         let result = (date.getHours() * 60 + date.getMinutes()) * 0.5;
         
-        // Нормализация результата: при превышении 360° берем остаток от деления
+        // Result normalization: if exceeds 360°, take remainder
         return result >= 360 ? result % 360 : result;
     }
 

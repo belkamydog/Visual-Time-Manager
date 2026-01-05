@@ -2,7 +2,7 @@
   "configVersion": "v2",
   "app": {
     "appId": 28655,
-    "appName": "Empty",
+    "appName": "Visual Time Planner WF",
     "appType": "watchface",
     "version": {
       "code": 1,
@@ -10,7 +10,7 @@
     },
     "icon": "icon.png",
     "vender": "zepp",
-    "description": "empty watchface"
+    "description": "Visual Time Planner WF"
   },
   "permissions": [
     "data:user.hd.step",
@@ -77,7 +77,7 @@
   },
   "i18n": {
     "en-US": {
-      "appName": "Empty"
+      "appName": "Visual Time Planner WF"
     }
   },
   "defaultLanguage": "en-US"

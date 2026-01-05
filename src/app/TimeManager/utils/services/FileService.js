@@ -5,11 +5,11 @@ const logger = log.getLogger('FileService')
 
 export class FileService {
     /**
-     * Читает содержимое файла
+     * Reads file contents
      *
-     * @param {string} path - Путь к файлу, который нужно прочитать
-     * @returns {string} Содержимое файла в формате UTF-8
-     * @throws {Error} Выбрасывает ошибку, если файл не существует
+     * @param {string} path - Path to the file to read
+     * @returns {string} File contents in UTF-8 format
+     * @throws {Error} Throws error if file doesn't exist
      * @example
      * try {
      *   const content = fileService.readFile('/path/to/file.txt');
@@ -37,11 +37,11 @@ export class FileService {
         return result
     }
     /**
-     * Записывает данные в файл
+     * Writes data to a file
      *
-     * @param {string} path - Путь к файлу для записи
-     * @param {string} content - Содержимое, которое нужно записать
-     * @throws {Error} Выбрасывает ошибку при неудачной записи
+     * @param {string} path - Path to the file for writing
+     * @param {string} content - Content to write
+     * @throws {Error} Throws error on write failure
      * @example
      * try {
      *   fileService.writeFile('/path/to/file.txt', 'Hello, World!');

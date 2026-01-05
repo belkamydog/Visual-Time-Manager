@@ -17,7 +17,7 @@ Page({
       color: styleColors.white
     })
     createWidget(widget.TEXT, {
-      text: getText('App name') + ': Visual event manager',
+      text: getText('App name') + ': Visual time planner',
       x: 50,
       y: 120,
       w: 440,
@@ -60,32 +60,9 @@ Page({
       color: styleColors.white_smoke
     })
 
-    createWidget(widget.TEXT, {
-      text: getText('Support the project'),
-      x: 0,
-      y: 270+50,
-      w: 480,
-      h: 40,
-      text_size: 28,
-      align_h: align.CENTER_H,
-      color: styleColors.gold
-    })
-
-    const qrcode = createWidget(widget.QRCODE, {
-      content: 'https://www.tinkoff.ru/rm/r_OwPHadPfJk.wjrdDTIaqx/US0Uv75147',
-      x: 140,
-      y: 320+70,
-      w: 200,
-      h: 200,
-      bg_x: 120,
-      bg_y: 320+50,
-      bg_w: 240,
-      bg_h: 240
-    })
-
     createWidget(widget.BUTTON, {
       x: 40,
-      y: 600+40,
+      y: 350,
       w: 400,
       h: 60,
       radius: 30,

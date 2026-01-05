@@ -1,58 +1,36 @@
-import { readSync, statSync, openSync, O_RDONLY} from '@zos/fs'
-import {widget, createWidget, prop, align} from '@zos/ui'
-import {Time, Battery, Step, Calorie, Distance, HeartRate} from '@zos/sensor'
-import { WEEK_DAYS } from '../../../app/TimeManager/utils/Constants'
+import {widget, createWidget, prop, align, deleteWidget, event} from '@zos/ui'
+import {Time, Battery, Step, Calorie, Distance, HeartRate, Weather} from '@zos/sensor'
+import { WEEK_DAYS_SHORT } from '../../../app/TimeManager/utils/Constants'
 import { WatchFaceDigits } from '../utils/WatchFaceDigits'
 import { Manager } from '../utils/Manager'
+import { launchApp} from '@zos/router'
+import {log} from '@zos/utils'
+import { getText } from '@zos/i18n'
 
 
 function addZero(value){
   return value < 10 ? '0'+ value : value
 }
-
-function getLevel(value) {
-    if (value >= 0 && value < 5) {
-        return 1; // Уровень 1: 0-4.99
-    }else if (value >= 5 && value < 13) {
-        return 2; // Уровень 1: 0-12.99
-    } else if (value >= 13 && value < 25) {
-        return 3; // Уровень 2: 13-24.99
-    } else if (value >= 25 && value < 38) {
-        return 4; // Уровень 3: 25-37.99
-    } else if (value >= 38 && value < 50) {
-        return 5; // Уровень 4: 38-49.99
-    } else if (value >= 50 && value < 63) {
-        return 6; // Уровень 5: 50-62.99
-    } else if (value >= 63 && value < 75) {
-        return 7; // Уровень 6: 63-74.99
-    } else if (value >= 75 && value < 88) {
-        return 8; // Уровень 7: 75-87.99
-    } else if (value >= 88 && value <= 100) {
-        return 9; // Уровень 8: 88-100
-    } else {
-        throw new Error('Значение выходит за допустимый диапазон');
-    }
-}
-const eventsArr = [
-  {start:"2025-12-16T12:00:00.635Z", end:"2025-12-16T13:00:00.635Z", startAngle: 0, endAngle: 30, description: 'School New Year party', state: 'After some minutes', period: '12:00-13:00', color: '0x5b0202'},
-  {start:"2025-12-16T15:00:00.635Z", end:"2025-12-16T17:00:00.635Z",startAngle: 90, endAngle: 150, description: 'Running', state: 'After some minutes', period: '15:00-17:00', color: '0x063308'},
-  {start:"2025-12-16T18:00:00.635Z", end:"2025-12-16T19:00:00.635Z",startAngle: 180, endAngle: 210, description: 'Cooking', state: 'After some minutes', period: '18:00-19:00', color: '0x120862'},
-]
+const logger = log.getLogger('Time Manager Wachface')
+const wf = new WatchFaceDigits()
 
 WatchFace({
   events: [],
-  wf: new WatchFaceDigits(),
   sensors: {
+    timer: null,
     timeSensor: new Time(),
     powerSensor: new Battery(),
     stepSensor: new Step(),
     calorieSensor: new Calorie(),
     distanceSensor: new Distance(),
-    heartRateSensor: new HeartRate()
+    heartRateSensor: new HeartRate(),
+    weatherSensor: new Weather()
   },
   state:{
+    openApp: null,
+    refreshTimer: null, 
+    group: null, 
     backgroundAnalog: null,
-    digitBackground: null,
     time:{
       hourMinute: null,
       seconds: null,
@@ -73,6 +51,18 @@ WatchFace({
       value: null,
       indicate: null
     },
+    weather:{
+      location: null,
+      current:{
+        temperature:{
+          low: null,
+          high: null
+        },
+        description: null,
+        icon:null
+      }
+    },
+    wf: null, 
     wfNumbers:{
       _0: null,
       _1: null,
@@ -90,12 +80,12 @@ WatchFace({
   },
 
   initWfNumbers() {
+    logger.log('Init wfNumbers..')
     const centerX = 240;
     const centerY = 240;
     const radius = 220;
-    
-    this.wf.initWatchFace(new Date().getHours())
-    const numbers = this.wf.getTimePointDigits()
+    wf.initWatchFace(new Date().getHours())
+    const numbers = wf.getTimePointDigits()
     let angle = -90
     for (let i = 0; i < 12; i++){
       const angleInRadians = angle * Math.PI / 180;
@@ -106,16 +96,16 @@ WatchFace({
       let w = 52-12
       let h = 52-12
       if (numbers[i] == 12) {
-        size = 30-15
+        size = 30-5
         value = '☀️'
-        y = centerY + (radius-5) * Math.sin(angleInRadians) - 20;
+        y = centerY + (radius-5) * Math.sin(angleInRadians) - 30;
         w = 52
         h = 52
       }
       else if (numbers[i] == 0){
-        size = 30-15
+        size = 30-5
         value = '🌙'
-        y = centerY + (radius-5) * Math.sin(angleInRadians) - 20;
+        y = centerY + (radius-5) * Math.sin(angleInRadians) - 30;
         w = 52
         h = 52
       } 
@@ -133,25 +123,34 @@ WatchFace({
       });
     }
   },
+  updateWfNumbers(){
+    wf.updateWatchFaceDigit(new Date().getHours())
+    const numbers = wf.getTimePointDigits()
+    for (let i = 0; i < 12; i++){
+          let value = numbers[i]
+          if (numbers[i] == 12) {
+            value = '☀️'
+          }
+          else if (numbers[i] == 0){
+            value = '🌙'
+          } 
+          this.state.wfNumbers[`_${i}`].setProperty(prop.TEXT, value)        
+      }
+  },
   initAnalogBg(){
+    logger.log('Init analog BG..')
     this.state.backgroundAnalog = createWidget(widget.IMG, {
       src: 'bgAnalog2.png',
       x: 0,
       y: 0,
     })
   },
-  initDigitalBg(){
-    this.state.digitBackground = createWidget(widget.IMG, {
-      src: 'digitBg.png',
-      x: (480-350.06)/2,
-      y: (480-350.06)/2,
-    })
-  },
   initDateTime(){
+    logger.log('Init date and time widgets..')
     this.state.time.hourMinute = createWidget(widget.TEXT, {
       text: (addZero(this.sensors.timeSensor.getHours())+':'+ addZero(this.sensors.timeSensor.getMinutes())).toString(),
       text_size: 88,
-      color: 0x000000,
+      color: 0xFFFFFF,
       font: 'fonts/Serati/Serati-Regular.otf',
       x: 100,
       y: 200,
@@ -160,7 +159,7 @@ WatchFace({
     this.state.time.seconds = createWidget(widget.TEXT, {
       text: addZero(this.sensors.timeSensor.getSeconds()),
       text_size: 58,
-      color: 0x000000,
+      color: 0xFFFFFF,
       font: 'fonts/Serati/Serati-Regular.otf',
       x: 185+155,
       y: 225,
@@ -169,20 +168,20 @@ WatchFace({
     this.state.time.date = createWidget(widget.TEXT, {
       text: addZero(this.sensors.timeSensor.getDate()) +  '.' + addZero(this.sensors.timeSensor.getMonth()) ,
       text_size: 48,
-      color: 0x000000,
+      color: 0xFFFFFF,
       font: 'fonts/Serati/Serati-Regular.otf',
       x: 105,
       y: 155,
       w: 120,
     }) 
     this.state.time.weekDay = createWidget(widget.TEXT, {
-      text: WEEK_DAYS[this.sensors.timeSensor.getDay()] ,
+      text: getText(WEEK_DAYS_SHORT[this.sensors.timeSensor.getDay()]),
       text_size: 38,
-      color: 0x000000,
+      color: 0xFFFFFF,
       font: 'fonts/Serati/Serati-Regular.otf',
       x: 225,
       y: 163,
-      w: 200,
+      w: 170,
     })
     createWidget(widget.TIME_POINTER, {
       hour_centerX: 240,
@@ -191,20 +190,14 @@ WatchFace({
       hour_posY: 240,
       hour_path: 'hour.png',  
     })
-    let timer = null
-    createWidget(widget.WIDGET_DELEGATE, {
-      resume_call: () => {
-        timer = setInterval(()=>{
-          this.state.time.seconds.setProperty(prop.TEXT, addZero(this.sensors.timeSensor.getSeconds().toString()))
-          this.state.time.hourMinute.setProperty(prop.TEXT, (addZero(this.sensors.timeSensor.getHours())+':'+ addZero(this.sensors.timeSensor.getMinutes())).toString())
-        }, 1000)
-      },
-      pause_call: () => {
-        clearInterval(timer);
-        timer = null;
-        console.log('Watchface pause')
-      }
-    })
+  },
+  updateDateTime(){
+    this.state.time.date.setProperty(prop.TEXT, addZero(this.sensors.timeSensor.getDate()) +  '.' + addZero(this.sensors.timeSensor.getMonth()))
+    this.state.time.weekDay.setProperty(prop.TEXT, getText(WEEK_DAYS_SHORT[this.sensors.timeSensor.getDay()]))
+    this.sensors.timer = setInterval(()=>{
+      this.state.time.seconds.setProperty(prop.TEXT, addZero(this.sensors.timeSensor.getSeconds().toString()))
+      this.state.time.hourMinute.setProperty(prop.TEXT, (addZero(this.sensors.timeSensor.getHours())+':'+ addZero(this.sensors.timeSensor.getMinutes())).toString())
+    }, 1000)
   },
   initActivity(){
     createWidget(widget.IMG, {
@@ -214,9 +207,9 @@ WatchFace({
     })
     this.state.actitity.step = createWidget(widget.TEXT, {
       text: this.sensors.stepSensor.getCurrent().toString(),
-      text_size: 20,
+      text_size: 30,
       align_h: align.LEFT,
-      color: 0x000000, // if val < 5 red color
+      color: 0xFFFFFF,
       font: 'fonts/Serati/Serati-Regular.otf',
       x: 140,
       y: 300,
@@ -229,9 +222,9 @@ WatchFace({
     })
     this.state.actitity.distance = createWidget(widget.TEXT, {
       text: this.sensors.distanceSensor.getCurrent().toString(),
-      text_size: 20,
+      text_size: 30,
       align_h: align.RIGHT,
-      color: 0x000000,
+      color: 0xFFFFFF,
       font: 'fonts/Serati/Serati-Regular.otf',
       x: 240,
       y: 300,
@@ -244,9 +237,9 @@ WatchFace({
     })
     this.state.actitity.calories = createWidget(widget.TEXT, {
       text: this.sensors.calorieSensor.getCurrent().toString(),
-      text_size: 20,
+      text_size: 30,
       align_h: align.LEFT,
-      color: 0x000000,
+      color: 0xFFFFFF,
       font: 'fonts/Serati/Serati-Regular.otf',
       x: 160,
       y: 340,
@@ -259,141 +252,250 @@ WatchFace({
     })
     this.state.actitity.heart = createWidget(widget.TEXT, {
       text: this.sensors.heartRateSensor.getLast().toString(),
-      text_size: 20,
+      text_size: 30,
       align_h: align.RIGHT,
-      color: 0x000000,
+      color: 0xFFFFFF,
       font: 'fonts/Serati/Serati-Regular.otf',
       x: 225,
       y: 340,
       w: 100,
-    })
-    createWidget(widget.WIDGET_DELEGATE, {
-      resume_call: () => {
-        this.state.actitity.step.setProperty(prop.TEXT, this.sensors.stepSensor.getCurrent().toString())
-        this.state.actitity.calories.setProperty(prop.TEXT, this.sensors.calorieSensor.getCurrent().toString())
-        this.state.actitity.distance.setProperty(prop.TEXT, this.sensors.distanceSensor.getCurrent().toString())
-        this.state.actitity.heart.setProperty(prop.TEXT, this.sensors.heartRateSensor.getCurrent().toString())
-      }
-    })        
-  },
-  initPower(){
-    this.state.power.value = createWidget(widget.TEXT, {
-      text: this.sensors.powerSensor.getCurrent().toString() + '%',
-      text_size: 20,
-      align_h: align.CENTER_H,
-      color: 0xffffff, // if val < 5 red color
-      font: 'fonts/Serati/Serati-Regular.otf',
-      x: (480-100)/2,
-      y: 417,
-      w: 100,
-    })
-    const imgPower = ['power/0.png', 'power/1.png','power/2.png','power/3.png','power/4.png','power/5.png','power/6.png','power/7.png','power/8.png',]
-    this.state.power.indicate = createWidget(widget.IMG_LEVEL, {
-      x: 0,
-      y: 0,
-      image_array: imgPower,
-      image_length: 9,
-      level: getLevel(this.sensors.powerSensor.getCurrent())
-    })
-    console.log('level ' + getLevel(this.sensors.powerSensor.getCurrent()))
-    this.sensors.powerSensor.onChange(()=>{
-      this.state.power.value.setProperty(prop.TEXT, this.sensors.powerSensor.getCurrent().toString() + '%')
-      this.state.power.indicate.setProperty(prop.LEVEL, getLevel(this.sensors.powerSensor.getCurrent()))
-
-    })
-    createWidget(widget.WIDGET_DELEGATE, {
-      resume_call: () => {
-          this.state.power.value.setProperty(prop.TEXT, this.sensors.powerSensor.getCurrent().toString() + '%')
-          this.state.power.indicate.setProperty(prop.LEVEL, getLevel(this.sensors.powerSensor.getCurrent()))
-      },
     })    
   },
-  initWeather(){
-
+  updateActivity(){
+    this.state.actitity.step.setProperty(prop.TEXT, this.sensors.stepSensor.getCurrent().toString())
+    this.state.actitity.calories.setProperty(prop.TEXT, this.sensors.calorieSensor.getCurrent().toString())
+    this.state.actitity.distance.setProperty(prop.TEXT, this.sensors.distanceSensor.getCurrent().toString())
+    this.state.actitity.heart.setProperty(prop.TEXT, this.sensors.heartRateSensor.getCurrent().toString())
+  },
+  initPower(){
+    logger.log('Init power widget..')
+    this.state.power.value = createWidget(widget.TEXT, {
+      text: this.sensors.powerSensor.getCurrent().toString() + '%',
+      text_size: 30,
+      align_h: align.LEFT,
+      color: 0xFFFFFF,
+      font: 'fonts/Serati/Serati-Regular.otf',
+      x: 230,
+      y: 375,
+      w: 100,
+    })
+    createWidget(widget.IMG, {
+      src: 'icons/power.png',
+      x: 240-45,
+      y: 380,
+    })
+    this.sensors.powerSensor.onChange(()=>{
+      this.state.power.value.setProperty(prop.TEXT, this.sensors.powerSensor.getCurrent().toString() + '%')
+    })
+  },
+  updatePower(){
+    this.state.power.value.setProperty(prop.TEXT, this.sensors.powerSensor.getCurrent().toString() + '%')
+  },
+  initWeather() {
+    logger.log('Init weather widgets..')
+    const forecastData = this.sensors.weatherSensor.getForecast().forecastData
+    this.state.weather.current.temperature.low = createWidget(widget.TEXT,{
+      text: forecastData.data[0].low.toString() + '°',
+      text_size: 20,
+      align_h: align.LEFT,
+      color: 0xFFFFFF,
+      font: 'fonts/Serati/Serati-Regular.otf',
+      x: 320,
+      y: 160,
+      w: 50,      
+    })
+    this.state.weather.current.temperature.high = createWidget(widget.TEXT,{
+      text: forecastData.data[0].high.toString() + '°',
+      text_size: 20,
+      align_h: align.LEFT,
+      color: 0xFFFFFF,
+      font: 'fonts/Serati/Serati-Regular.otf',
+      x: 320+50,
+      y: 160,
+      w: 50,      
+    })
+   this.state.weather.current.icon =  createWidget(widget.IMG, {
+      src: `weather/${forecastData.data[0].index}.png`,
+      x: 330,
+      y: 180,
+    })
+  },
+  updateWeather(){
+    const forecastData = this.sensors.weatherSensor.getForecast().forecastData
+    this.state.weather.current.temperature.low.setProperty(prop.TEXT, forecastData.data[0].low.toString() + '°')
+    this.state.weather.current.temperature.high.setProperty(prop.TEXT, forecastData.data[0].high.toString() + '°')
+    this.state.weather.current.icon.setProperty(prop.SRC, `weather/${forecastData.data[0].index}.png`)
   },
   initEventState(){
-    let current = Manager.getNextState(eventsArr)
+    logger.log('Init event state..')
     this.state.eventState.time = createWidget(widget.TEXT, {
-      text: current.state,
-      text_size: 20,
+      text: '',
+      text_size: 30,
       align_h: align.CENTER_H,
-      color: 0x000000,
-      font: 'fonts/Serati/Serati-Regular.otf',
+      color: 0xFFFFFF,
       x: (480-100)/2,
       y: 80,
       w: 100,
     })
     this.state.eventState.description = createWidget(widget.TEXT, {
-      text: current.description,
+      text: '',
       text_size: 30,
       align_h: align.CENTER_H,
-      color: 0x000000,
-      font: 'fonts/Serati/Serati-Regular.otf',
+      color: 0xFFFFFF,
       x: (480-220)/2,
-      y: 110,
+      y: 120,
       w: 220,
     })    
   },
+  updateEventState(eventsArr){
+    try{
+      let current = Manager.getNextState(eventsArr)
+      this.state.eventState.time.setProperty(prop.TEXT, current.status)
+      this.state.eventState.description.setProperty(prop.TEXT, current.description)
+    } catch {
+      return
+    }
+  },
   renderEventSectors(){
-    eventsArr.forEach((item) =>{
-      const ev = createWidget(widget.ARC, {
-        x: 0,
-        y: 0,
+    if (this.state.group == null) {
+      logger.log('Event sectors group init')
+      this.state.group = createWidget(widget.GROUP, {
         w: 480,
         h: 480,
-        start_angle: item.startAngle-90,
-        end_angle: item.endAngle-90,
-        line_width: 35,
-        alpha: 100,
-        color: item.color
+        x: 0,
+        y: 0,
       })
-      ev.setAlpha(250)
-      this.events.push(ev)
+    }
+    const listOfActuals = Manager.uploadActualEvents()
+    this.events.forEach((item) => {
+      deleteWidget(item)
+    })
+    if (listOfActuals != undefined) {
+      listOfActuals.forEach((item) =>{
+        const ev = this.state.group.createWidget(widget.ARC, {
+          x: (480-400)/2,
+          y: (480-400)/2,
+          w: 400,
+          h: 400,
+          start_angle: item.startAngle-90,
+          end_angle: item.endAngle-90,
+          line_width: 23,
+          alpha: 100,
+          color: item.color
+        })
+        ev.setAlpha(250)
+        this.events.push(ev)
+      })
+    }
+    this.updateEventState(listOfActuals)
+  },
+  refreshEventData(){
+      let lastUpdateTime = 0;
+      createWidget(widget.WIDGET_DELEGATE, {
+          resume_call: async () => {
+              const currentTime = Date.now();
+              if (currentTime - lastUpdateTime < 60000) {
+                  logger.log('Upadte events data failed timer < 1 min');
+                  return;
+              }
+              try {
+                  lastUpdateTime = currentTime;
+                  await this.updateData();
+                  if (!this.state.refreshTimer) {
+                      this.state.refreshTimer = setInterval(() => {
+                          launchApp({
+                              appId: 1099579,
+                              url: 'page/refresh'
+                          });
+                      }, 60000);
+                      logger.log('Event data updated successfull')
+                  }
+              } catch (error) {
+                  console.error('Update events failed! Error:', error);
+              }
+          },
+          pause_call: () => {
+              if (this.state.refreshTimer) {
+                  clearInterval(this.state.refreshTimer);
+                  this.state.refreshTimer = null;
+              }
+          },
+          error_call: (error) => {
+              console.error('Error in WIDGET_DELEGATE:', error);
+          }
+      });
+  },
+  async updateData() {
+      return new Promise((resolve, reject) => {
+          launchApp({
+              appId: 1099579,
+              url: 'page/refresh',
+              onSuccess: () => {
+                  logger.log('Update events successfull');
+                  resolve();
+              },
+              onError: (error) => {
+                  console.error('Update events error: ', error);
+                  reject(error);
+              }
+          });
+      });
+  },
+  updateEventSectors(){
+    Manager.uploadActualEvents()
+    this.renderEventSectors()
+    deleteWidget(this.state.backgroundAnalog)
+    this.initAnalogBg()
+  },
+  updateWidgets(){
+    createWidget(widget.WIDGET_DELEGATE, {
+      resume_call: () => {
+        this.updateWfNumbers()
+        this.updateDateTime()
+        this.updateActivity()
+        this.updatePower()
+        this.updateWeather()
+        this.updateEventSectors()
+        this.createOpenAppArea()
+      },
+      pause_call: () => {
+        clearInterval(this.sensors.timer)
+        this.sensors.timer = null
+      }
+    })
+  },
+  createOpenAppArea(){
+    if (this.state.openApp == null) deleteWidget(this.state.openApp)
+    this.state.openApp = createWidget(widget.FILL_RECT, {
+      w: 50,
+      h: 50,
+      x: (480-50)/2,
+      y: 80,
+      color: 0xda1111
+    })
+    this.state.openApp.setAlpha(0)
+    this.state.openApp.addEventListener(event.CLICK_UP, () => {
+      launchApp ({
+        appId: 1099579
+      })
     })
   },
 
   onInit() {
-    this.renderEventSectors()
-    this.initAnalogBg()
-    this.initWfNumbers()
-    this.initPower()
-    this.initDigitalBg()
-    this.initDateTime()
-    this.initActivity()
-    this.initEventState()
-  },
-
-  build() {
-
-
-      const fd = openSync({
-        path: 'events',
-        flag: O_RDONLY,
-        options:{
-          appId: 1099579,
-        }
-      })
-
-      const fileInfo = statSync({
-        path: 'events',
-        options: {
-            appId: 1099579
-        }
-      });
-      console.log(fd)
-      const buffer = new ArrayBuffer(1024) 
-      const result = readSync({
-        fd,
-        buffer,
-      })
-
-      const uint8Array = new Uint8Array(buffer);
-      const text = String.fromCharCode.apply(null, uint8Array);
-      console.log('TEXT: ' + text) 
-
-
-  },
-
-  onDestroy() {
-  },
+    try{
+      logger.log('Wachface init')
+      this.renderEventSectors()
+      this.initAnalogBg()
+      this.initWfNumbers()
+      this.initPower()
+      this.initDateTime()
+      this.initActivity()
+      this.initWeather()
+      this.initEventState([])
+      this.refreshEventData()
+      this.updateWidgets()
+    } catch (error){
+      logger.error('Error ', error)
+    }
+  }
 })

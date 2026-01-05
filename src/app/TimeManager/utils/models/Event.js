@@ -1,5 +1,6 @@
 import { getText } from '@zos/i18n'
 import { styleColors, WEEK_DAYS } from '../Constants'
+import { HOUR_MS } from '../Constants'
 
 export class Event {
     id
@@ -8,6 +9,8 @@ export class Event {
     end
     color
     repeat
+    startAngle
+    endAngle
 
     ago_time
     date_period
@@ -34,6 +37,9 @@ export class Event {
         this.weekDay()
         this.durationEvent()
         this.colorState()
+        const {startAngle, endAngle } = this.#calculateEventAngles(event, new Date())
+        this.startAngle = startAngle
+        this.endAngle = endAngle
     }
 
     colorState(){
@@ -139,6 +145,45 @@ export class Event {
     getDescription(){ return this.description }
 
     getWeekDay(){ return this.week_day }
+
+
+    #calculateEventAngles(event, timeNow) {
+        // Вычисляем базовые углы для начала и конца события
+        let startAngle = this.#convertTimeToAngle(event.start);
+        let endAngle = this.#convertTimeToAngle(event.end);
+        
+        // Вычисляем время отсечения (2 часа назад)
+        const deleteTime = new Date(new Date(timeNow).getTime() - 2 * HOUR_MS);
+        
+        // Корректируем углы с учетом временных ограничений
+        if (new Date(event.start) < deleteTime) {
+            // Если начало события раньше 2 часов назад, начинаем от 2-часовой отметки
+            startAngle = this.#convertTimeToAngle(deleteTime);
+        } else if (new Date(event.end).getTime() > timeNow + 10 * HOUR_MS) {
+            // Если конец события позже чем через 10 часов, обрезаем до 10-часовой отметки
+            endAngle = this.#convertTimeToAngle(timeNow + 10 * HOUR_MS);
+        }
+        
+        // Корректируем угол начала, если он больше угла конца
+        startAngle = startAngle > endAngle ? (startAngle - 360) : startAngle;
+        
+        return {
+            startAngle: startAngle,
+            endAngle: endAngle
+        };
+    }
+
+   #convertTimeToAngle(time) {
+        // Создаем объект даты из переданного времени
+        let date = new Date(time);
+        
+        // Вычисляем общее количество минут
+        // (часы * 60 + минуты) * 0.5°/минуту
+        let result = (date.getHours() * 60 + date.getMinutes()) * 0.5;
+        
+        // Нормализация результата: при превышении 360° берем остаток от деления
+        return result >= 360 ? result % 360 : result;
+    }
 
     static calculateTimeDifference(start, end) {
         const diffMs = end.getTime() - start.getTime();

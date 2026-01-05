@@ -1,2 +1,0 @@
-msgid "List of events"
-msgstr "List of events

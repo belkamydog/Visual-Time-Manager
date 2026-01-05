@@ -179,7 +179,7 @@ export const WEEK_DAYS = [
   'Saturday',
 ]
 export const WEEK_DAYS_SHORT = [
-    "sun",    // Sunday
+    "sun",   // Sunday
     "mon",   // Monday
     "tue",   // Tuesday
     "wed",   // Wednesday

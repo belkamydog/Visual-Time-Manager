@@ -4,7 +4,6 @@ App(
     BaseApp({
         globalData: {},
         onCreate(options) {
-            // Вызываем функцию инициализации сервиса
             console.log('app on create invoke');
         },
 

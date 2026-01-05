@@ -5,12 +5,12 @@ const logger = log.getLogger('SettingsService')
 
 export class SettingsService {
     /**
-     * Путь к файлу настроек
+     * Path to settings file
      * @type {string}
      */
     static #settingsFilePath = 'settings'
     /**
-     * Устанавливает настройки по умолчанию
+     * Set default settings
      * 
      * @returns {void}
      */
@@ -21,20 +21,20 @@ export class SettingsService {
         return defaultSet
     }
     /**
-     * Загружает настройки приложения из файла конфигурации
+     * Load application settings from configuration file
      * 
-     * Метод выполняет последовательность действий:
-     * 1. Пытается прочитать файл с настройками
-     * 2. Валидирует полученные данные
-     * 3. Парсит JSON
-     * 4. Возвращает объект с настройками
+     * Method performs sequence of actions:
+     * 1. Attempts to read settings file
+     * 2. Validates received data
+     * 3. Parses JSON
+     * 4. Returns settings object
      * 
-     * При возникновении ошибки:
-     * - Записывает ошибку в лог
-     * - Устанавливает настройки по умолчанию
+     * If error occurs:
+     * - Logs error
+     * - Sets default settings
      * 
-     * @returns {{autoDelete: string, colorTheme: string}} Объект с настройками приложения
-     * @throws {Error} В случае критической ошибки при загрузке
+     * @returns {{autoDelete: string, colorTheme: string}} Application settings object
+     * @throws {Error} In case of critical loading error
      * 
      * @example
      * const settings = SettingsManager.loadSettings();
@@ -54,13 +54,13 @@ export class SettingsService {
     }
 
     /**
-     * Сохраняет настройки в файл
+     * Save settings to file
      * 
-     * @param {Object} settings Объект с настройками для сохранения
-     * @param {string} settings.autoDelete Значение автоудаления
-     * @param {string} settings.colorTheme Значение темы оформления
+     * @param {Object} settings Settings object to save
+     * @param {string} settings.autoDelete Auto-delete value
+     * @param {string} settings.colorTheme Theme value
      * @returns {void}
-     * @throws {Error} Выбрасывает ошибку при неудачной записи
+     * @throws {Error} Throws error on failed write
      */
     static saveSettings(settings){
         try{
@@ -74,10 +74,10 @@ export class SettingsService {
         }
     }
     /**
-     * Валидирует настройки перед сохранением или загрузкой
+     * Validate settings before saving or loading
      * 
-     * @param {Object} settings Объект с настройками для проверки
-     * @throws {Error} Выбрасывает ошибку при несоответствии формата
+     * @param {Object} settings Settings object to validate
+     * @throws {Error} Throws error on format mismatch
      * @private
      */
     static #validateSettings(settings) {
@@ -92,5 +92,4 @@ export class SettingsService {
             throw new Error('Invalid settings');
         }
     }
-
 }
