@@ -1,7 +1,7 @@
 {
-  "name": "VisualTimePlanner",
+  "name": "ClockWise",
   "version": "1.0.0",
-  "description": "",
+  "description": "Plan smarter with visual organizer",
   "main": "app.js",
   "scripts": {
     "test": "jest"

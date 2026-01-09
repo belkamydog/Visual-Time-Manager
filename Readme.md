@@ -1,8 +1,8 @@
-### Event Manager — Your Schedule at a Glance
+### Visual time planner — Your Schedule at a Glance
 
 <img src="./img/preview.png" alt="Preview" width="200"/>
 
-**Event Manager** is a comprehensive scheduling application designed specifically for Amazfit smartwatches, transforming your watch face into an interactive daily planner.
+**Event planner** is a comprehensive scheduling application designed specifically for Amazfit smartwatches, transforming your watch face into an interactive daily planner.
 
 ### 📋 Key Features
 

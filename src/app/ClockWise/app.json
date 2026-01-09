@@ -2,7 +2,7 @@
   "configVersion": "v3",
   "app": {
     "appId": 1099579,
-    "appName": "VisualTimePlanner",
+    "appName": "ClockWise",
     "appType": "app",
     "version": {
       "code": 1,
@@ -10,7 +10,7 @@
     },
     "icon": "icon.png",
     "vender": "zepp",
-    "description": "Visual time planner application"
+    "description": "Plan smarter with visual organizer"
   },
   "permissions": [],
   "runtime": {
@@ -60,7 +60,7 @@
   },
   "i18n": {
     "en-US": {
-      "appName": "VisualTimePlaner"
+      "appName": "ClockWise"
     }
   },
   "defaultLanguage": "en-US"

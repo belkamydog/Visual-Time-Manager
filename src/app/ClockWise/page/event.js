@@ -1,6 +1,6 @@
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
-import { createWidget, widget, align, show_level } from '@zos/ui'
+import { createWidget, widget, align } from '@zos/ui'
 import { back, push } from '@zos/router'
 import { Event } from '../utils/models/Event'
 import { eventServise } from '../utils/Globals'
@@ -112,7 +112,7 @@ Page ({
             radius: 220,
             start_angle: -150,
             end_angle: 150,
-            color: 0x22F91A,
+            color: pageData.color,
             line_width: 20,
             level: pageData.getlevel()
         }),

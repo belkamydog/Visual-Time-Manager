@@ -17,6 +17,7 @@ Page({
                 logger.log('Edit color canceled push to edit menu')
                 push({
                     url: 'page/event/edit/menu',
+                    params: JSON.stringify(event)
                 })
             }
             return true
@@ -25,7 +26,7 @@ Page({
     },
 
     onInit(params){
-        logger.log('Init edit color page with params: ' + params)
+        logger.log('Init edit color page, current color is: ' + JSON.parse(params).color)
         this.registerGes()
         const title = createWidget(widget.TEXT, {
             x: 140,
@@ -58,9 +59,9 @@ Page({
                         let current_event = JSON.parse(params)
                         current_event.color = currentColor
                         eventServise.editEvent(current_event)
-                        logger.log('Edit color done: ' + current_event.color)
+                        logger.log('Edit color done, current color: ' + current_event.color)
                         push({
-                            url: 'page/event/edit/menu',
+                            url: 'page/event',
                             params: JSON.stringify(current_event)
                         })
                     }

@@ -18,6 +18,7 @@ Page({
                 logger.log('Edit end event canceled push to edit menu')
                 push({
                     url: 'page/event/edit/menu',
+                    params: JSON.stringify(event)
                 })
             }
             return true

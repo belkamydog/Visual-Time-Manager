@@ -87,10 +87,7 @@ Page({
                     })
                 }
 
-            },
-            item_focus_change_func: (cycleList, index, isFocus) => {
-
-            },
+            }
         })
     }
 })

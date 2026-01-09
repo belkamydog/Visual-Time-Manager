@@ -190,3 +190,15 @@ msgstr "Повтор"
 
 msgid "Delete this event"
 msgstr "Удалить это событие"
+
+msgid "App name"
+msgstr "Название приложения"
+
+msgid "Version"
+msgstr "Версия"
+
+msgid "Developer"
+msgstr "Разработчик"
+
+msgid "Contact"
+msgstr "Контакты"

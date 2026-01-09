@@ -3,18 +3,17 @@ import { back } from '@zos/router'
 import { getText } from '@zos/i18n'
 import { AUTO_DELETE, styleColors } from '../../utils/Constants'
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
-import { settingsService } from '../../utils/Globals'
 import { SettingsService } from '../../utils/services/SettingsService'
 
 
-let index_auto_delete = 0//  AUTO_DELETE.indexOf(SettingsService.loadSettings().autoDelete)
+let index_auto_delete = 0
 Page({
     actions: ['Never','Older than day', 'Older than week', 'Older than month'],
 
     attentionDialog(){
         const attention = getText('Attention! Some events can be deleted!') 
         const dialog = createModal({
-            content: attention ,
+            content: attention,
             autoHide: false,
             show: false,
             onClick: (keyObj) => {
@@ -130,7 +129,6 @@ Page({
     },
     
     onInit(){
-        console.log('INDEX AD' + SettingsService.loadSettings().autoDelete)
         createWidget(widget.TEXT, {
             text: getText('Delete events:'),
             w: 300,
@@ -143,7 +141,6 @@ Page({
             color: styleColors.white_smoke
         })
         this.initDeleteRadioGroup()
-        const self = this
         createWidget(widget.BUTTON, {
             x: 40,
             y: 550,
@@ -156,9 +153,9 @@ Page({
             text_size: 32,
             click_func: () => {
                 if (index_auto_delete > 0){
-                    self.attentionDialog()
-                }else {
-                    const settings = settingsService.loadSettings()
+                    this.attentionDialog()
+                } else {
+                    const settings = SettingsService.loadSettings()
                     settings.autoDelete = AUTO_DELETE[index_auto_delete]
                     SettingsService.saveSettings(settings)
                     back()

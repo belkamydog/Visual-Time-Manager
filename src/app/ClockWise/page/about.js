@@ -17,7 +17,7 @@ Page({
       color: styleColors.white
     })
     createWidget(widget.TEXT, {
-      text: getText('App name') + ': Visual time planner',
+      text: getText('App name') + ': ClockWise',
       x: 50,
       y: 120,
       w: 440,
@@ -50,7 +50,7 @@ Page({
     })
 
     createWidget(widget.TEXT, {
-      text: getText('Contact ') + ': belkamydog22@gmail.com',
+      text: getText('Contact') + ': belkamydog22@gmail.com',
       x: 50,
       y: 270,
       w: 480,

@@ -177,7 +177,7 @@ export class EventService {
                 this.#repeateRule(new Event(ev), week, resultList)
             }
             else {
-                if (new Date(ev.start) >= week.start && new Date(ev.start <= week.end))
+                if (new Date(ev.start) <= week.end && new Date(ev.end) >= week.start)
                     resultList.push(new Event(ev))
             }
         }

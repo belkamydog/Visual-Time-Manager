@@ -69,28 +69,43 @@ Page({
     })
   },
 
-  addKeys(arrEv){
-    let result = []
-    let previous = {}
-    previous.previous_week = 'previous.png'
-    result.push(previous)
-    for (let i of arrEv){
-      i.date_period = '🗓️' + ' ' + i.date_period
-      i.period = '🕑' + ' ' + i.period + ' ' + new Event(i).getDuration()
-      i.weekDay = new Event(i).getWeekDay()
-      i.del_img = 'delete.png'
-      i.edit_img = 'edit.png'
-      if (i.check_repeat == 'never') i.check_repeat =''
-      else if (i.check_repeat == 'day') i.check_repeat ='🔄 '+ getText('Every day')
-      else if (i.check_repeat == 'week') i.check_repeat ='🔄 '+ getText('Every week')
-      else if (i.check_repeat == 'month') i.check_repeat ='🔄 '+ getText('Every month')
-      result.push(i)
-    } 
-    let next = {}
-    next.next_week = 'next.png'
-    result.push(next)
-    return result
+  addKeys(arrEv) {
+      let result = [];
+            const previous = {
+          previous_week: 'previous.png'
+      };
+      result.push(previous);
+      for (const event of arrEv) {
+          const eventCopy = { ...event };
+          eventCopy.date_period = '🗓️ ' + eventCopy.date_period;
+          eventCopy.period = '🕑 ' + eventCopy.period + ' ' + new Event(eventCopy).getDuration();
+          eventCopy.weekDay = new Event(eventCopy).getWeekDay();
+          eventCopy.del_img = 'delete.png';
+          eventCopy.edit_img = 'edit.png';
+          switch (eventCopy.check_repeat) {
+              case 'never':
+                  eventCopy.check_repeat = '';
+                  break;
+              case 'day':
+                  eventCopy.check_repeat = '🔄 ' + getText('Every day');
+                  break;
+              case 'week':
+                  eventCopy.check_repeat = '🔄 ' + getText('Every week');
+                  break;
+              case 'month':
+                  eventCopy.check_repeat = '🔄 ' + getText('Every month');
+                  break;
+          }
+          result.push(eventCopy);
+      }
+      const next = {
+          next_week: 'next.png'
+      };
+      result.push(next);
+      
+      return result;
   },
+
 
   ifEmptyListOfEventsLabel(){
     createWidget(widget.TEXT, {
@@ -221,7 +236,7 @@ Page({
         item_click_func: (item, index, data_key) => {
           if (data_key === 'del_img') {
                 const deleteDialog = createModal({
-                  content: 'Delete this event?',
+                  content: getText('Delete this event') + '?',
                   autoHide: false,
                   show: false,
                   onClick: (keyObj) => {
@@ -256,7 +271,8 @@ Page({
           else if (data_key == 'edit_img'){
             logger.log('Calling edit menu...')
             push({
-              url: 'page/event/edit/menu'
+              url: 'page/event/edit/menu',
+              params: JSON.stringify(listOfEvents[index-1])
             })
           }
         },

@@ -20,6 +20,7 @@ Page({
                 logger.log('Repeat peacker canceled push to edit menu')
                 push({
                     url: 'page/event/edit/menu',
+                    params: JSON.stringify(event)
                 })
             }
             return true
@@ -138,7 +139,7 @@ Page({
             radius: 30,
             normal_color: styleColors.dark_green,
             press_color: styleColors.blue_violet,
-            text: getText('Create'),
+            text: getText('Save changes'),
             text_size: 32,
             click_func: () => {
                 let result = JSON.parse(params)
