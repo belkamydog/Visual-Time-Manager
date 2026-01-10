@@ -1,0 +1,23 @@
+msgid "mon"
+msgstr "пн"
+
+msgid "tue"
+msgstr "вт"
+
+msgid "wed"
+msgstr "ср"
+
+msgid "thu"
+msgstr "чт"
+
+msgid "fri"
+msgstr "пт"
+
+msgid "sat"
+msgstr "сб"
+
+msgid "sun"
+msgstr "вс"
+
+msgid "Open app to create new events"
+msgstr "Откройте приложение чтобы создать новое событие"

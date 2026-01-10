@@ -1,0 +1,84 @@
+{
+  "configVersion": "v2",
+  "app": {
+    "appId": 28655,
+    "appName": "Visual Time Planner WF",
+    "appType": "watchface",
+    "version": {
+      "code": 1,
+      "name": "1.0.0"
+    },
+    "icon": "icon.png",
+    "vender": "zepp",
+    "description": "Visual Time Planner WF"
+  },
+  "permissions": [
+    "data:user.hd.step",
+    "data:user.hd.calorie",
+    "data:user.hd.distance",
+    "data:user.hd.heart_rate"
+  ],
+  "runtime": {
+    "apiVersion": {
+      "compatible": "3.0.0",
+      "target": "3.0.0",
+      "minVersion": "3.0.0"
+    }
+  },
+  "targets": {
+    "390x450-amazfit-gts-3": {
+      "module": {
+        "watchface": {
+          "path": "watchface/index",
+          "main": 1,
+          "editable": 0,
+          "lockscreen": 0,
+          "hightCost": 0
+        }
+      },
+      "platforms": [
+        {
+          "name": "Zurich",
+          "deviceSource": 224
+        },
+        {
+          "name": "ZurichW",
+          "deviceSource": 225
+        }
+      ],
+      "designWidth": 390
+    },
+    "480x480-amazfit-t-rex-3": {
+      "module": {
+        "watchface": {
+          "path": "watchface/index",
+          "main": 1,
+          "editable": 0,
+          "lockscreen": 0,
+          "hightCost": 0
+        }
+      },
+      "platforms": [
+        {
+          "name": "Matterhorn",
+          "deviceSource": 8716544
+        },
+        {
+          "name": "MatterhornWN",
+          "deviceSource": 8716545
+        },
+        {
+          "name": "MatterhornW",
+          "deviceSource": 8716547
+        }
+      ],
+      "designWidth": 480
+    }
+  },
+  "i18n": {
+    "en-US": {
+      "appName": "Visual Time Planner WF"
+    }
+  },
+  "defaultLanguage": "en-US"
+}
