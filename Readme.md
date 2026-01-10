@@ -1,8 +1,8 @@
-### Visual time planner — Your Schedule at a Glance
+### ClockWise — Your Schedule at a Glance
 
 <img src="./img/preview.png" alt="Preview" width="200"/>
 
-**Event planner** is a comprehensive scheduling application designed specifically for Amazfit smartwatches, transforming your watch face into an interactive daily planner.
+**ClockWise** is a comprehensive scheduling application designed specifically for Amazfit smartwatches, transforming your watch face into an interactive daily planner.
 
 ### 📋 Key Features
 
@@ -60,7 +60,7 @@
 ## 🚀 Technical Features
 
 ### **Platform**
-- Developed for Zepp OS 2.0+
+- Developed for Zepp OS 4.0+
 - Compatible with Amazfit T-Rex-3, Balance2
 - Optimized for round screens
 
@@ -102,11 +102,11 @@ This application is provided free of charge for personal use.
 
 
 
-### Event Manager - Ваше расписание на запястье
+### ClockWise - Ваше расписание на запястье
 
 <img src="./img/preview.png" alt="drawing" width="200"/>
 
-**Event Manager** — это комплексное приложение для планирования, разработанное специально для умных часов Amazfit, которое превращает циферблат ваших часов в интерактивный ежедневник.
+**ClockWise** — это комплексное приложение для планирования, разработанное специально для умных часов Amazfit, которое превращает циферблат ваших часов в интерактивный ежедневник.
 
 ### 📋 Основные функции
 
@@ -197,7 +197,7 @@ This application is provided free of charge for personal use.
 
 ## 📄 Лицензия
 
-© 2024 Event Manager. Все права защищены.
+© 2024 ClockWise. Все права защищены.
 Это приложение предоставляется бесплатно для личного использования.
 
 ---
